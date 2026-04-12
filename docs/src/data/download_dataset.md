@@ -1,48 +1,48 @@
 # `src/data/download_dataset.py`
 
-## Purpose
+## Finalidade
 
-Download the PhysioNet **get-zip** archive for MIT-BIH version 1.0.0, save it temporarily under the raw data directory, extract all contents into that same directory, then delete the ZIP to save disk space. Progress is logged with the standard `logging` module.
+Descarrega o arquivo **get-zip** da PhysioNet para a MIT-BIH versão 1.0.0, grava-o temporariamente no diretório de dados brutos, extrai todo o conteúdo para essa mesma pasta e remove o ZIP para poupar espaço em disco. O progresso é registado com o módulo standard `logging`.
 
-## Configuration
+## Configuração
 
-- **Default URL:** `https://physionet.org/content/mitdb/get-zip/1.0.0/`
-- **Default raw directory:** `src.config.RAW_DATA_DIR` (unless overridden by `--raw-dir`).
-- **Default ZIP filename on disk:** `mitdb-1.0.0.zip` (removed after extraction).
+- **URL por omissão:** `https://physionet.org/content/mitdb/get-zip/1.0.0/`
+- **Diretório bruto por omissão:** `src.config.RAW_DATA_DIR` (salvo `--raw-dir`).
+- **Nome do ZIP em disco por omissão:** `mitdb-1.0.0.zip` (removido após extração).
 
-The module calls `ensure_data_dirs()` from `src.config` before downloading.
+O módulo chama `ensure_data_dirs()` de `src.config` antes do descarregamento.
 
-## Main functions
+## Funções principais
 
-| Function | Role |
-|----------|------|
-| `configure_logging` | Sets basic logging for CLI use. |
-| `download_zip` | Streams the HTTP response to a file in chunks. |
-| `extract_zip` | Unpacks the archive with `zipfile` into the target folder. |
-| `cleanup_zip` | Deletes the ZIP file after extraction. |
-| `run_download_pipeline` | Orchestrates download, extract, and cleanup. |
-| `main` | CLI entrypoint (`argparse`). |
+| Função | Papel |
+|--------|------|
+| `configure_logging` | Define logging básico para uso em CLI. |
+| `download_zip` | Transmite a resposta HTTP para ficheiro em blocos. |
+| `extract_zip` | Descompacta o arquivo com `zipfile` para a pasta de destino. |
+| `cleanup_zip` | Elimina o ficheiro ZIP após extração. |
+| `run_download_pipeline` | Orquestra descarregamento, extração e limpeza. |
+| `main` | Ponto de entrada da CLI (`argparse`). |
 
-## Command line
+## Linha de comandos
 
-After `pip install -e .`, from the repository root:
+Após `pip install -e .`, a partir da raiz do repositório:
 
 ```bash
 python -m src.data.download_dataset
 ```
 
-Options:
+Opções:
 
-- `--url` : alternate ZIP URL
-- `--raw-dir` : override raw directory
-- `--zip-name` : temporary ZIP name inside the raw directory
-- `-q` / `--quiet` : less verbose logging
+- `--url` : URL alternativa do ZIP
+- `--raw-dir` : substitui o diretório de dados brutos
+- `--zip-name` : nome do ZIP temporário dentro do diretório bruto
+- `-q` / `--quiet` : registo menos verboso
 
-## Interactions
+## Interações
 
 - **`src.config`:** `RAW_DATA_DIR`, `ensure_data_dirs`.
-- **Downstream:** WFDB files are read by notebooks or other code using `wfdb`; see `src.config.mitdb_record_dir()` and [Data dictionary](../data_dictionary.md).
+- **A jusante:** os ficheiros WFDB são lidos por notebooks ou outro código com `wfdb`; consulte `src.config.mitdb_record_dir()` e o [Dicionário de dados](../data_dictionary.md).
 
-## Related documentation
+## Documentação relacionada
 
 - [`config.md`](../config.md)

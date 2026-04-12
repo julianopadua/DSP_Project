@@ -1,36 +1,36 @@
-# Data dictionary: MIT-BIH and WFDB files
+# Dicionário de dados: MIT-BIH e ficheiros WFDB
 
-This project uses the **MIT-BIH Arrhythmia Database** from PhysioNet. Records follow the **WFDB** (Waveform Database) format used across PhysioNet.
+Este projeto utiliza a **MIT-BIH Arrhythmia Database** da PhysioNet. Os registos seguem o formato **WFDB** (Waveform Database), comum na PhysioNet.
 
-## Dataset source
+## Origem da base
 
-- **Landing page:** [MIT-BIH Arrhythmia Database 1.0.0](https://physionet.org/content/mitdb/1.0.0/)
-- **ZIP download:** [get-zip 1.0.0](https://physionet.org/content/mitdb/get-zip/1.0.0/)
-- **Uncompressed size:** about 104.3 MB (per PhysioNet description).
-- **ZIP size:** about 73.5 MB.
-- **Content:** 48 half-hour excerpts of two-channel ambulatory ECG from 47 subjects; sampling rate **360 Hz** per channel; 11-bit resolution over a **10 mV** range (as described on PhysioNet).
+- **Página:** [MIT-BIH Arrhythmia Database 1.0.0](https://physionet.org/content/mitdb/1.0.0/)
+- **Descarregamento ZIP:** [get-zip 1.0.0](https://physionet.org/content/mitdb/get-zip/1.0.0/)
+- **Tamanho descomprimido:** cerca de 104,3 MB (segundo a PhysioNet).
+- **Tamanho do ZIP:** cerca de 73,5 MB.
+- **Conteúdo:** 48 trechos de meia hora de ECG ambulatorial em dois canais de 47 sujeitos; frequência de amostragem **360 Hz** por canal; resolução de 11 bits num intervalo de **10 mV** (conforme a PhysioNet).
 
-Ingestion is implemented in `src.data.download_dataset` and paths are defined in `src.config`.
+A ingestão está implementada em `src.data.download_dataset` e os caminhos em `src.config`.
 
-## WFDB file types
+## Tipos de ficheiro WFDB
 
-### Header file (`.hea`)
+### Ficheiro de cabeçalho (`.hea`)
 
-Plain text. Describes the recording: number of signals, sample rate, calibration, gain, format of each signal, file names of binary signal files, and other metadata. Humans can open it in an editor; loaders such as `wfdb` read it to know how to decode the matching `.dat` file.
+Texto simples. Descreve a gravação: número de sinais, frequência de amostragem, calibração, ganho, formato de cada canal, nomes dos ficheiros binários de sinal e outros metadados. Pode ser lido em editor; bibliotecas como `wfdb` utilizam-no para descodificar o `.dat` correspondente.
 
-### Signal file (`.dat`)
+### Ficheiro de sinal (`.dat`)
 
-Binary file with raw waveform samples. It is **not** plain text. The `.hea` file specifies layout and encoding. Always use a WFDB-aware library (for example `wfdb`) or official PhysioNet tools to read it.
+Ficheiro binário com amostras da forma de onda. **Não** é texto simples. O ficheiro `.hea` especifica disposição e codificação. Utilize sempre biblioteca compatível com WFDB (por exemplo `wfdb`) ou ferramentas oficiais da PhysioNet.
 
-### Annotation file (`.atr`)
+### Ficheiro de anotação (`.atr`)
 
-Binary annotation file. Clinician- or algorithm-produced labels aligned to samples (for example beat types, rhythm changes). For MIT-BIH, the reference beat annotations are commonly loaded with the `atr` extension via `wfdb.rdann`. Use `wfdb` to decode; do not treat as text.
+Ficheiro binário de anotações. Etiquetas produzidas por clínico ou algoritmo, alinhadas a amostras (por exemplo tipos de batimento, alterações de ritmo). Na MIT-BIH, as anotações de referência de batimento carregam-se frequentemente com extensão `atr` via `wfdb.rdann`. Utilize `wfdb` para descodificar; não trate como texto.
 
-## How this maps to the project layout
+## Relação com a estrutura do projeto
 
-- After download, WFDB files live under `data/raw/` (possibly inside one subdirectory created by the ZIP). See `src.config.mitdb_record_dir()` for how the code picks the folder passed as `record_dir` to `wfdb`.
+- Após o descarregamento, os ficheiros WFDB residem em `data/raw/` (por vezes dentro de uma subpasta criada pelo ZIP). Consulte `src.config.mitdb_record_dir()` para o diretório a concatenar ao nome do registo nas chamadas `wfdb` (caminho local completo, sem `pn_dir` com caminho de disco).
 
-## References (required citations)
+## Referências (citações exigidas)
 
 1. Moody GB, Mark RG. The impact of the MIT-BIH Arrhythmia Database. IEEE Eng Med Biol 20(3):45-50 (May-June 2001).
 

@@ -1,5 +1,5 @@
 # src/data/download_dataset.py
-"""Download and extract the PhysioNet MIT-BIH Arrhythmia Database ZIP."""
+"""Descarrega e extrai o arquivo ZIP da base MIT-BIH Arrhythmia (PhysioNet)."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ DEFAULT_ZIP_NAME: Final[str] = "mitdb-1.0.0.zip"
 
 
 def configure_logging(level: int = logging.INFO) -> None:
-    """Configure root logging for CLI runs."""
+    """Configura o logging de raiz para execução em linha de comandos."""
     logging.basicConfig(
         level=level,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
@@ -29,25 +29,25 @@ def configure_logging(level: int = logging.INFO) -> None:
 
 
 def download_zip(url: str, dest_path: Path, chunk_size: int = 1 << 20) -> Path:
-    """Download a remote ZIP to ``dest_path`` (parent directories created).
+    """Descarrega um ZIP remoto para ``dest_path`` (cria diretórios ascendentes).
 
-    Parameters
+    Parâmetros
     ----------
     url
-        HTTP(S) URL of the ZIP file.
+        URL HTTP(S) do ficheiro ZIP.
     dest_path
-        Full path where the ZIP file will be written.
+        Caminho completo onde o ZIP será escrito.
     chunk_size
-        Stream chunk size in bytes.
+        Tamanho do bloco em fluxo contínuo, em bytes.
 
-    Returns
+    Retorno
     -------
     pathlib.Path
-        ``dest_path`` after a successful download.
+        ``dest_path`` após descarregamento bem-sucedido.
     """
     dest_path.parent.mkdir(parents=True, exist_ok=True)
     logger = logging.getLogger(__name__)
-    logger.info("Downloading %s", url)
+    logger.info("A descarregar %s", url)
     with requests.get(url, stream=True, timeout=120) as response:
         response.raise_for_status()
         total = response.headers.get("Content-Length")
@@ -61,34 +61,34 @@ def download_zip(url: str, dest_path: Path, chunk_size: int = 1 << 20) -> Path:
                 written += len(chunk)
                 if total_bytes and written % (10 * chunk_size) < chunk_size:
                     logger.info(
-                        "Downloaded %s / %s bytes",
+                        "Descarregados %s / %s bytes",
                         written,
                         total_bytes,
                     )
-    logger.info("Finished download: %s bytes -> %s", written, dest_path)
+    logger.info("Descarregamento concluído: %s bytes -> %s", written, dest_path)
     return dest_path
 
 
 def extract_zip(zip_path: Path, extract_to: Path) -> None:
-    """Extract all members of ``zip_path`` into ``extract_to``."""
+    """Extrai todos os membros de ``zip_path`` para ``extract_to``."""
     logger = logging.getLogger(__name__)
-    logger.info("Extracting %s -> %s", zip_path, extract_to)
+    logger.info("A extrair %s -> %s", zip_path, extract_to)
     extract_to.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(zip_path, "r") as archive:
         members = archive.namelist()
-        logger.info("Archive contains %s entries", len(members))
+        logger.info("O arquivo contém %s entradas", len(members))
         archive.extractall(extract_to)
-    logger.info("Extraction complete")
+    logger.info("Extração concluída")
 
 
 def cleanup_zip(zip_path: Path) -> None:
-    """Remove the ZIP file at ``zip_path`` if it exists."""
+    """Remove o ficheiro ZIP em ``zip_path``, se existir."""
     logger = logging.getLogger(__name__)
     if zip_path.is_file():
         zip_path.unlink()
-        logger.info("Removed ZIP file: %s", zip_path)
+        logger.info("ZIP removido: %s", zip_path)
     else:
-        logger.warning("ZIP file not found for removal: %s", zip_path)
+        logger.warning("ZIP não encontrado para remoção: %s", zip_path)
 
 
 def run_download_pipeline(
@@ -96,22 +96,22 @@ def run_download_pipeline(
     raw_dir: Path | None = None,
     zip_name: str = DEFAULT_ZIP_NAME,
 ) -> Path:
-    """Download the MIT-BIH ZIP, extract into the raw data folder, delete the ZIP.
+    """Descarrega o ZIP MIT-BIH, extrai para a pasta de dados brutos e apaga o ZIP.
 
-    Parameters
+    Parâmetros
     ----------
     url
-        Download URL (defaults to PhysioNet get-zip for version 1.0.0).
+        URL de descarregamento (por omissão: get-zip PhysioNet da versão 1.0.0).
     raw_dir
-        Directory for extracted content. Defaults to ``RAW_DATA_DIR`` from
+        Diretório para o conteúdo extraído. Por omissão: ``RAW_DATA_DIR`` em
         ``src.config``.
     zip_name
-        Filename used for the temporary ZIP inside ``raw_dir``.
+        Nome do ficheiro ZIP temporário dentro de ``raw_dir``.
 
-    Returns
+    Retorno
     -------
     pathlib.Path
-        ``raw_dir`` after extraction (absolute).
+        ``raw_dir`` após extração (absoluto).
     """
     ensure_data_dirs()
     target_raw = (raw_dir or RAW_DATA_DIR).resolve()
@@ -125,37 +125,37 @@ def run_download_pipeline(
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    """Parse CLI arguments."""
+    """Interpreta argumentos da linha de comandos."""
     parser = argparse.ArgumentParser(
-        description="Download and extract the MIT-BIH Arrhythmia Database (WFDB).",
+        description="Descarrega e extrai a base MIT-BIH Arrhythmia (WFDB).",
     )
     parser.add_argument(
         "--url",
         default=DEFAULT_DOWNLOAD_URL,
-        help="ZIP URL (default: PhysioNet mitdb 1.0.0 get-zip).",
+        help="URL do ZIP (por omissão: get-zip PhysioNet mitdb 1.0.0).",
     )
     parser.add_argument(
         "--raw-dir",
         type=Path,
         default=None,
-        help="Override raw data directory (default: src.config.RAW_DATA_DIR).",
+        help="Substitui o diretório de dados brutos (por omissão: src.config.RAW_DATA_DIR).",
     )
     parser.add_argument(
         "--zip-name",
         default=DEFAULT_ZIP_NAME,
-        help="Temporary ZIP filename inside the raw directory.",
+        help="Nome do ZIP temporário dentro do diretório de dados brutos.",
     )
     parser.add_argument(
         "-q",
         "--quiet",
         action="store_true",
-        help="Warning level logging only.",
+        help="Apenas avisos no registo (menos verboso).",
     )
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Console script entrypoint."""
+    """Ponto de entrada para execução como script."""
     args = parse_args(argv)
     configure_logging(logging.WARNING if args.quiet else logging.INFO)
     try:
@@ -165,10 +165,10 @@ def main(argv: list[str] | None = None) -> int:
             zip_name=args.zip_name,
         )
     except requests.RequestException as exc:
-        logging.getLogger(__name__).error("Download failed: %s", exc)
+        logging.getLogger(__name__).error("Falha no descarregamento: %s", exc)
         return 1
     except (OSError, zipfile.BadZipFile) as exc:
-        logging.getLogger(__name__).error("Archive error: %s", exc)
+        logging.getLogger(__name__).error("Erro no arquivo: %s", exc)
         return 1
     return 0
 

@@ -1,13 +1,13 @@
 # `src/visualization/__init__.py`
 
-## Purpose
+## Finalidade
 
-Reserved package for plotting helpers in later project stages (for example shared ECG plotting functions). The initial EDA notebook may plot inline with Matplotlib until shared utilities are added.
+Pacote reservado a funções de visualização em etapas posteriores do projeto (por exemplo funções partilhadas de traçado de ECG). O notebook inicial de EDA pode traçar inline com Matplotlib até existirem utilitários comuns.
 
-## Interactions
+## Interações
 
-No hard dependencies on other `src` modules yet.
+Ainda sem dependências rígidas de outros módulos `src`.
 
-## Related documentation
+## Documentação relacionada
 
-- [Data dictionary](../../data_dictionary.md)
+- [Dicionário de dados](../../data_dictionary.md)

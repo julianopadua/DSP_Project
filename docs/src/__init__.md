@@ -1,13 +1,13 @@
 # `src/__init__.py`
 
-## Purpose
+## Finalidade
 
-Marks the top-level Python package for this repository. Exposes `__version__` for optional use by notebooks or packaging.
+Marca o pacote Python de topo deste repositório. Expõe `__version__` para uso opcional em notebooks ou empacotamento.
 
-## Interactions
+## Interações
 
-Subpackages include `src.data` (ingestion) and `src.visualization` (reserved). Configuration lives in `src.config`.
+Subpacotes: `src.data` (ingestão) e `src.visualization` (reservado). A configuração reside em `src.config`.
 
-## Related documentation
+## Documentação relacionada
 
 - [`config.md`](config.md)

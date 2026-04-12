@@ -1,4 +1,4 @@
 # src/__init__.py
-"""Top-level package for the DSP ECG project code."""
+"""Pacote de topo do código do projeto DSP em ECG."""
 
 __version__ = "0.1.0"

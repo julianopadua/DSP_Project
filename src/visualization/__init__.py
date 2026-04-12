@@ -1,2 +1,2 @@
 # src/visualization/__init__.py
-"""Plotting and visualization helpers (reserved for later stages)."""
+"""Funções de visualização (reservado para etapas posteriores)."""

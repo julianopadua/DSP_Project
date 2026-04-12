@@ -1,31 +1,31 @@
 # `src/config.py`
 
-## Purpose
+## Finalidade
 
-Centralize filesystem paths for the repository so scripts and notebooks share one definition of where raw and processed data live. Paths are built with `pathlib` and resolved relative to this file: the project root is the parent of the `src` package directory.
+Centralizar caminhos no sistema de ficheiros para que scripts e notebooks partilhem uma única definição da localização dos dados brutos e processados. Os caminhos são construídos com `pathlib` e resolvidos relativamente a este ficheiro: a raiz do projeto é o diretório pai do pacote `src`.
 
-## Exports
+## Exportações
 
-| Name | Meaning |
-|------|---------|
-| `PROJECT_ROOT` | Absolute path to the repository root. |
-| `RAW_DATA_DIR` | `PROJECT_ROOT / "data" / "raw"` (PhysioNet extracts, WFDB files). |
-| `PROCESSED_DATA_DIR` | `PROJECT_ROOT / "data" / "processed"` (future filtered signals). |
+| Nome | Significado |
+|------|-------------|
+| `PROJECT_ROOT` | Caminho absoluto para a raiz do repositório. |
+| `RAW_DATA_DIR` | `PROJECT_ROOT / "data" / "raw"` (extratos PhysioNet, ficheiros WFDB). |
+| `PROCESSED_DATA_DIR` | `PROJECT_ROOT / "data" / "processed"` (sinais filtrados futuros). |
 
-## Functions
+## Funções
 
 - **`ensure_data_dirs()`**  
-  Creates `RAW_DATA_DIR` and `PROCESSED_DATA_DIR` if they do not exist. Used by the download pipeline before writing files.
+  Cria `RAW_DATA_DIR` e `PROCESSED_DATA_DIR` se não existirem. Utilizada pelo fluxo de descarregamento antes de escrever ficheiros.
 
 - **`mitdb_record_dir()`**  
-  Returns the directory that contains WFDB record files (for example `100.hea`). After extracting the MIT-BIH ZIP, records may sit directly under `RAW_DATA_DIR` or inside one nested folder. The helper checks for `100.hea` at the top level, then searches immediate subfolders. Raises `FileNotFoundError` if the dataset is missing.
+  Devolve o diretório que contém os ficheiros WFDB do registo (por exemplo `100.hea`). Após extrair o ZIP MIT-BIH, os registos podem estar diretamente em `RAW_DATA_DIR` ou numa subpasta imediata. A função verifica `100.hea` no nível superior e depois subpastas. Gera `FileNotFoundError` se a base estiver em falta.
 
-## Interactions
+## Interações
 
-- **`src.data.download_dataset`** imports `RAW_DATA_DIR` and calls `ensure_data_dirs()` before download and extraction.
-- **Notebooks** import `mitdb_record_dir()` (and optionally `RAW_DATA_DIR`) to pass `record_dir` into `wfdb.rdrecord` and `wfdb.rdann`.
+- **`src.data.download_dataset`** importa `RAW_DATA_DIR` e chama `ensure_data_dirs()` antes do descarregamento e da extração.
+- **Notebooks** importam `mitdb_record_dir()` (e opcionalmente `RAW_DATA_DIR`) para construir o caminho completo do registo passado a `wfdb.rdrecord` e `wfdb.rdann` (por exemplo `(mitdb_record_dir() / "100").as_posix()`).
 
-## Related documentation
+## Documentação relacionada
 
-- [Data dictionary (WFDB files)](../data_dictionary.md)
+- [Dicionário de dados (ficheiros WFDB)](../data_dictionary.md)
 - [`download_dataset.md`](data/download_dataset.md)

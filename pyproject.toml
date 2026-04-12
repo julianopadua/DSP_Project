@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "dsp-ecg-mitbih"
 version = "0.1.0"
-description = "Academic ECG signal analysis foundation (MIT-BIH, WFDB)."
+description = "Base acadêmica para análise de sinais de ECG (MIT-BIH, WFDB)."
 readme = "README.md"
 requires-python = ">=3.10"
 

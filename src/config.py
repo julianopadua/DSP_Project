@@ -1,11 +1,11 @@
 # src/config.py
-"""Project paths and directory layout resolved from this file location."""
+"""Caminhos do projeto e estrutura de diretórios relativamente a este ficheiro."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
-# Repository root: parent of the `src` package directory.
+# Raiz do repositório: diretório pai do pacote `src`.
 PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent
 
 RAW_DATA_DIR: Path = PROJECT_ROOT / "data" / "raw"
@@ -13,41 +13,42 @@ PROCESSED_DATA_DIR: Path = PROJECT_ROOT / "data" / "processed"
 
 
 def ensure_data_dirs() -> None:
-    """Create raw and processed data directories if they are missing."""
+    """Cria os diretórios de dados brutos e processados, se ainda não existirem."""
     RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
     PROCESSED_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def mitdb_record_dir() -> Path:
-    """Return the directory that contains WFDB record files (for example ``100.hea``).
+    """Devolve o diretório que contém os ficheiros WFDB do registo (por exemplo ``100.hea``).
 
-    After extracting the PhysioNet ZIP, files may live directly under
-    ``RAW_DATA_DIR`` or inside one nested folder (for example ``mitdb``).
-    This helper picks the first directory that contains ``100.hea``, or raises
-    if the dataset is not present.
+    Após extrair o ZIP da PhysioNet, os ficheiros podem estar diretamente em
+    ``RAW_DATA_DIR`` ou dentro de uma subpasta (por exemplo ``mitdb``).
+    Esta função devolve o primeiro diretório que contém ``100.hea``, ou gera
+    exceção se a base não estiver presente.
 
-    Returns
+    Retorno
     -------
     pathlib.Path
-        Absolute path to pass as ``record_dir`` to ``wfdb`` loaders.
+        Caminho absoluto a utilizar como prefixo de caminho para os leitores
+        ``wfdb`` (por exemplo ``wfdb.rdrecord((caminho / '100').as_posix())``).
 
-    Raises
-    ------
+    Exceções
+    --------
     FileNotFoundError
-        If no MIT-BIH record files are found under ``RAW_DATA_DIR``.
+        Se não forem encontrados ficheiros da MIT-BIH sob ``RAW_DATA_DIR``.
     """
     marker = RAW_DATA_DIR / "100.hea"
     if marker.is_file():
         return RAW_DATA_DIR
     if not RAW_DATA_DIR.is_dir():
         raise FileNotFoundError(
-            f"Raw data directory does not exist: {RAW_DATA_DIR}. "
-            "Run src.data.download_dataset to fetch and extract the dataset."
+            f"Diretório de dados brutos inexistente: {RAW_DATA_DIR}. "
+            "Execute src.data.download_dataset para obter e extrair a base."
         )
     for child in sorted(RAW_DATA_DIR.iterdir()):
         if child.is_dir() and (child / "100.hea").is_file():
             return child
     raise FileNotFoundError(
-        f"Could not find WFDB records (expected 100.hea) under {RAW_DATA_DIR}. "
-        "Download and extract the MIT-BIH ZIP into the raw data folder."
+        f"Não foi possível localizar registos WFDB (esperado 100.hea) em {RAW_DATA_DIR}. "
+        "Descarregue e extraia o ZIP MIT-BIH para a pasta de dados brutos."
     )

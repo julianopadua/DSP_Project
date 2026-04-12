@@ -1,2 +1,2 @@
 # src/data/__init__.py
-"""Data ingestion and dataset utilities."""
+"""Ingestão de dados e utilitários associados às bases."""

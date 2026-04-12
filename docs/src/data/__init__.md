@@ -1,14 +1,14 @@
 # `src/data/__init__.py`
 
-## Purpose
+## Finalidade
 
-Package marker for data-related modules (ingestion, future cleaning utilities).
+Marcador do pacote de módulos relacionados com dados (ingestão, futuras rotinas de limpeza).
 
-## Interactions
+## Interações
 
-The main entry point for downloading MIT-BIH is `download_dataset.py`. Paths come from `src.config`.
+O ponto principal para descarregar a MIT-BIH é `download_dataset.py`. Os caminhos provêm de `src.config`.
 
-## Related documentation
+## Documentação relacionada
 
 - [`download_dataset.md`](download_dataset.md)
 - [`../config.md`](../config.md)
