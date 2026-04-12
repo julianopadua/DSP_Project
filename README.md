@@ -83,11 +83,11 @@ Com o ambiente virtual ativo e o pacote instalado em modo editável:
 python -m src.data.download_dataset
 ```
 
-Descarrega o ZIP da PhysioNet para `data/raw/`, extrai o conteúdo e remove o ZIP. Opções de linha de comandos em [`docs/src/data/download_dataset.md`](docs/src/data/download_dataset.md).
+Faz o download do ZIP da PhysioNet para `data/raw/`, extrai o conteúdo e remove o ZIP. Opções de linha de comandos em [`docs/src/data/download_dataset.md`](docs/src/data/download_dataset.md).
 
 ## Execução do notebook de EDA
 
-Pode abrir e executar o notebook **diretamente na interface do Jupyter** (por exemplo Jupyter Notebook, JupyterLab ou VS Code / Cursor): abra `notebooks/01_EDA_Initial_Inspection.ipynb` e execute as células **sequencialmente** (por exemplo com "Run All" ou célula a célula). Confirme que o passo de download foi concluído para que existam ficheiros WFDB sob `data/raw/`.
+Pode abrir e executar o notebook diretamente: abra `notebooks/01_EDA_Initial_Inspection.ipynb` e execute as células sequencialmente. Confirme que o passo de download foi concluído para que existam ficheiros WFDB sob `data/raw/`.
 
 Alternativa por terminal (abre o servidor clássico do Jupyter no browser):
 
