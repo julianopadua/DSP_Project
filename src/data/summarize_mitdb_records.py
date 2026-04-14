@@ -48,26 +48,33 @@ CANONICAL_ANN_SYMBOLS: Final[tuple[str, ...]] = (
 )
 
 # (substring em aux_note normalizado, sufixo seguro para nome de coluna)
-RHYTHM_AUX_SUBSTRINGS: Final[tuple[tuple[str, str], ...]] = (
-    ("(AB", "AB"),
-    ("(AFIB", "AFIB"),
-    ("(AFL", "AFL"),
-    ("(ASMI", "ASMI"),
-    ("(BII", "BII"),
-    ("(BIGU", "BIGU"),
-    ("(B", "B"),
-    ("(HGEA", "HGEA"),
-    ("(IVR", "IVR"),
-    ("(NOD", "NOD"),
-    ("(N", "N"),
-    ("(P", "P"),
-    ("(PM", "PM"),
-    ("(PREX", "PREX"),
-    ("(SBR", "SBR"),
-    ("(SVTA", "SVTA"),
-    ("(T", "T"),
-    ("(VFL", "VFL"),
-    ("(VT", "VT"),
+# Ordem: substrings mais longas primeiro, para não confundir (ex.) "(N" com "(NOD".
+RHYTHM_AUX_SUBSTRINGS: Final[tuple[tuple[str, str], ...]] = tuple(
+    sorted(
+        (
+            ("(AB", "AB"),
+            ("(AFIB", "AFIB"),
+            ("(AFL", "AFL"),
+            ("(ASMI", "ASMI"),
+            ("(BII", "BII"),
+            ("(BIGU", "BIGU"),
+            ("(HGEA", "HGEA"),
+            ("(IVR", "IVR"),
+            ("(NOD", "NOD"),
+            ("(PREX", "PREX"),
+            ("(SBR", "SBR"),
+            ("(SVTA", "SVTA"),
+            ("(VFL", "VFL"),
+            ("(VT", "VT"),
+            ("(PM", "PM"),
+            ("(B", "B"),
+            ("(N", "N"),
+            ("(P", "P"),
+            ("(T", "T"),
+        ),
+        key=lambda t: len(t[0]),
+        reverse=True,
+    )
 )
 
 SYMBOL_TO_COL_SUFFIX: Final[dict[str, str]] = {
@@ -262,6 +269,7 @@ def parse_ann_row(record_prefix: str) -> tuple[dict[str, Any], str | None]:
         for substr, slug in RHYTHM_AUX_SUBSTRINGS:
             if substr in note:
                 out[f"aux_rhy_{slug}"] = int(out[f"aux_rhy_{slug}"]) + 1
+                break
 
     uniq = sorted(set(nonempty))[:40]
     out["aux_note_unique_truncated"] = " || ".join(uniq)[:4000]
