@@ -265,11 +265,20 @@ def parse_ann_row(record_prefix: str) -> tuple[dict[str, Any], str | None]:
     nonempty = [normalize_aux_note(a) for a in aux_list if normalize_aux_note(a)]
     out["n_aux_note_nonempty"] = len(nonempty)
 
+    substr_to_slug = dict(RHYTHM_AUX_SUBSTRINGS)
     for note in nonempty:
-        for substr, slug in RHYTHM_AUX_SUBSTRINGS:
-            if substr in note:
-                out[f"aux_rhy_{slug}"] = int(out[f"aux_rhy_{slug}"]) + 1
-                break
+        matched_subs = [s for s in substr_to_slug if s in note]
+        kept: set[str] = set()
+        for s in sorted(matched_subs, key=len, reverse=True):
+            if any(
+                len(t) > len(s) and s in t and s != t
+                for t in matched_subs
+            ):
+                continue
+            kept.add(s)
+        for s in kept:
+            slug = substr_to_slug[s]
+            out[f"aux_rhy_{slug}"] = int(out[f"aux_rhy_{slug}"]) + 1
 
     uniq = sorted(set(nonempty))[:40]
     out["aux_note_unique_truncated"] = " || ".join(uniq)[:4000]
@@ -513,7 +522,7 @@ def build_row(
     if not row["triplet_complete"]:
         row["parse_error"] = "missing_triplet_file"
         row.update(ann_fields_template())
-        row.update(_empty_noise_row("triplet_incomplete", user_skip_noise=skip_noise))
+        row.update(_empty_noise_row("triplet_incomplete", user_skip_noise=False))
         return row
 
     hrow, herr = parse_header_row(record_prefix)
