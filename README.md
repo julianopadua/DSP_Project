@@ -14,9 +14,10 @@ Esse projeto baixa a base acadêmica do MIT-BIH para **processamento digital de 
 4. [Instalação editável do pacote](#instalação-editável-do-pacote)
 5. [Higiene de notebooks no Git (nbstripout)](#higiene-de-notebooks-no-git-nbstripout)
 6. [Download da base MIT-BIH](#download-da-base-mit-bih)
-7. [Execução do notebook de EDA](#execução-do-notebook-de-eda)
-8. [Mapa da documentação (módulos)](#mapa-da-documentação-módulos)
-9. [Referências](#referências)
+7. [Sumarização dos registos MIT-BIH](#sumarização-dos-registos-mit-bih)
+8. [Execução do notebook de EDA](#execução-do-notebook-de-eda)
+9. [Mapa da documentação (módulos)](#mapa-da-documentação-módulos)
+10. [Referências](#referências)
 
 ## Fonte de dados
 
@@ -84,6 +85,30 @@ python -m src.data.download_dataset
 ```
 
 Faz o download do ZIP da PhysioNet para `data/raw/`, extrai o conteúdo e remove o ZIP. Opções de linha de comandos em [`docs/src/data/download_dataset.md`](docs/src/data/download_dataset.md).
+
+## Sumarização dos registos MIT-BIH
+
+Depois do download da base, gere o inventário tabular dos registos:
+
+```bash
+python -m src.data.summarize_mitdb_records
+```
+
+Se o seu sistema não tiver o alias `python`, use:
+
+```bash
+python3 -m src.data.summarize_mitdb_records
+```
+
+O comando percorre os registos WFDB encontrados em `data/raw/` (ou subpasta equivalente identificada por `mitdb_record_dir`) e escreve, por omissão, o ficheiro:
+
+`data/processed/mitdb_record_inventory.csv`
+
+Para acelerar uma execução inicial (sem cálculo de ruído), pode usar:
+
+```bash
+python -m src.data.summarize_mitdb_records --skip-noise
+```
 
 ## Execução do notebook de EDA
 

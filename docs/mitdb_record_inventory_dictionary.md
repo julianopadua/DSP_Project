@@ -193,6 +193,6 @@ São **indicadores heurísticos** no domínio tempo–frequência (Welch via `sc
 
 3. MIT-BIH Arrhythmia Database 1.0.0. PhysioNet. https://physionet.org/content/mitdb/1.0.0/
 
-4. WFDB Programmer's Guide — Annotation codes. https://archive.physionet.org/physiotools/wpg/wpg_36.htm
+4. WFDB Programmer's Guide — Annotation codes. https://archive.physionet.org/physiotools/wpg/wpg_32.htm#Annotation-Codes
 
 5. Goldberger A, et al. Main artifacts in electrocardiography. Biomed Eng Online (2020). https://pmc.ncbi.nlm.nih.gov/articles/PMC6931710/
