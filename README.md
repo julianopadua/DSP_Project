@@ -31,7 +31,7 @@ Os caminhos para dados brutos e processados estão definidos em [`src/config.py`
 
 | Caminho | Função |
 |---------|--------|
-| `data/raw/` | Ficheiros WFDB extraídos (ignorados pelo Git por omissão) |
+| `data/raw/` | arquivos WFDB extraídos (ignorados pelo Git por omissão) |
 | `data/processed/` | Reservado a sinais filtrados ou derivados |
 | `docs/` | Dicionário de dados e documentação Markdown por módulo |
 | `notebooks/` | Experimentos em Jupyter |
@@ -100,7 +100,7 @@ Se o seu sistema não tiver o alias `python`, use:
 python3 -m src.data.summarize_mitdb_records
 ```
 
-O comando percorre os registos WFDB encontrados em `data/raw/` (ou subpasta equivalente identificada por `mitdb_record_dir`) e escreve, por omissão, o ficheiro:
+O comando percorre os registos WFDB encontrados em `data/raw/mit-bih-arrhythmia-database-1.0.0` e escreve, por omissão, o folder:
 
 `data/processed/mitdb_record_inventory.csv`
 

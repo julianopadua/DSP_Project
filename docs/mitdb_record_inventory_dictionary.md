@@ -1,6 +1,6 @@
 # Dicionário do inventário MIT-BIH (`mitdb_record_inventory.csv`)
 
-Este documento descreve as colunas produzidas por [`src/data/summarize_mitdb_records.py`](../src/data/summarize_mitdb_records.py) ao percorrer todos os ficheiros `*.hea` no diretório devolvido por `mitdb_record_dir()` (ficheiros WFDB da [MIT-BIH Arrhythmia Database](https://physionet.org/content/mitdb/1.0.0/)).
+Descricao das colunas produzidas por [`src/data/summarize_mitdb_records.py`](../src/data/summarize_mitdb_records.py) ao percorrer todos os arquivos `*.hea` no diretório devolvido por `mitdb_record_dir()` (arquivos WFDB da [MIT-BIH Arrhythmia Database](https://physionet.org/content/mitdb/1.0.0/)).
 
 ## Como gerar o CSV
 
@@ -10,11 +10,11 @@ Na raiz do repositório, com o ambiente virtual activo e dependências instalada
 python -m src.data.summarize_mitdb_records
 ```
 
-Por omissão o ficheiro é escrito em `data/processed/mitdb_record_inventory.csv` (pasta ignorada pelo Git; criada se necessário). Opções úteis:
+O folder default é `data/processed/mitdb_record_inventory.csv` (pasta ignorada pelo Git; criada ao executar o script de extraçao). Opções úteis:
 
 | Opção | Efeito |
 |--------|--------|
-| `--output-csv CAMINHO` | Define o ficheiro de saída. |
+| `--output-csv CAMINHO` | Define o folder de saída. |
 | `--skip-noise` | Não carrega `p_signal`; colunas de ruído ficam vazias / `noise_analysis_error=skipped`. |
 | `--noise-full-record` | Uma única janela com o registo completo (mais memória e tempo). |
 | `--noise-window-sec` | Duração de cada janela em segundos (por omissão: 10). |
@@ -24,7 +24,7 @@ Por omissão o ficheiro é escrito em `data/processed/mitdb_record_inventory.csv
 
 ## Convenções gerais
 
-- **Uma linha por registo** identificado por `record_id` (stem do ficheiro `.hea`, por exemplo `100`).
+- **Uma linha por registo** identificado por `record_id` (stem do arquivo `.hea`, por exemplo `100`).
 - Valores em falta aparecem como células vazias no CSV (pandas escreve como campo vazio ou `NaN` conforme o tipo).
 - Booleanos aparecem como `True` / `False` no CSV.
 - Contagens de anotações são inteiras não negativas.
@@ -33,7 +33,7 @@ Por omissão o ficheiro é escrito em `data/processed/mitdb_record_inventory.csv
 
 ## Tabela de colunas (ordem do CSV)
 
-### Bloco A — Identidade, ficheiros e estado de leitura
+### Bloco A — Identidade, tipo de arquivos e estado de leitura
 
 | Coluna | Tipo | Origem | Descrição |
 |--------|------|--------|-----------|
@@ -42,8 +42,8 @@ Por omissão o ficheiro é escrito em `data/processed/mitdb_record_inventory.csv
 | `has_hea` | bool | `Path.is_file()` | Existe `{id}.hea`. |
 | `has_dat` | bool | idem | Existe `{id}.dat`. |
 | `has_atr` | bool | idem | Existe `{id}.atr`. |
-| `triplet_complete` | bool | derivado | `True` apenas se os três ficheiros existirem. |
-| `bytes_hea` | float/int | `stat().st_size` | Tamanho em bytes; vazio se o ficheiro não existir. |
+| `triplet_complete` | bool | derivado | `True` apenas se os três arquivos existirem. |
+| `bytes_hea` | float/int | `stat().st_size` | Tamanho em bytes; vazio se o arquivo não existir. |
 | `bytes_dat` | float/int | idem | idem |
 | `bytes_atr` | float/int | idem | idem |
 | `header_ok` | bool | `wfdb.rdheader` | `True` se o cabeçalho foi lido sem excepção. |
@@ -65,7 +65,7 @@ Equivalentes aos campos habituais de [`wfdb.Record`](https://wfdb.readthedocs.io
 | `base_time` | string | Hora de referência WFDB (pode estar vazia). |
 | `n_comments` | int | Número de linhas de comentário no cabeçalho. |
 | `comments_concat` | string | Comentários concatenados (truncado a 2000 caracteres). |
-| `sig_0_*` / `sig_1_*` | vários | Metadados por canal: `file` (nome do ficheiro de amostras), `fmt` (formato WFDB, ex. `212`), `units`, `adc_gain`, `baseline`, `init_val`, `adc_res`, `samps_per_frame`. O canal 1 fica vazio/`NaN` se `n_sig < 2`. |
+| `sig_0_*` / `sig_1_*` | vários | Metadados por canal: `file` (nome do arquivo de amostras), `fmt` (formato WFDB, ex. `212`), `units`, `adc_gain`, `baseline`, `init_val`, `adc_res`, `samps_per_frame`. O canal 1 fica vazio/`NaN` se `n_sig < 2`. |
 
 ### Bloco C — Resumo das anotações `atr`
 
