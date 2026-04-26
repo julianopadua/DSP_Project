@@ -12,7 +12,7 @@ Aplicar técnicas de processamento digital de sinais sobre ECGs da base MIT-BIH 
 
 | Etapa | Tema | Status |
 |-------|------|--------|
-| 1 | Pré-processamento / denoising (FIR + alternativa) | **Em andamento** |
+| 1 | Pré-processamento / denoising (FIR + alternativas) | **Concluída** |
 | 2 | Filtragem FIR — análise aprofundada e convolução rápida (FFT) | Não iniciada |
 | 3 | Filtros de Gabor 1D | Não iniciada |
 | 4 | Espectro de potência tempo-frequência | Não iniciada |
@@ -35,22 +35,33 @@ Aplicar técnicas de processamento digital de sinais sobre ECGs da base MIT-BIH 
 ```
 DSP_Project/
 ├── data/
-│   ├── raw/mit-bih-arrhythmia-database-1.0.0/   # 48 registros WFDB (ignorado pelo Git)
-│   └── processed/mitdb_record_inventory.csv       # inventário gerado
+│   ├── raw/mit-bih-arrhythmia-database-1.0.0/      # 48 registros WFDB (ignorado pelo Git)
+│   └── processed/
+│       ├── mitdb_record_inventory.csv               # inventário gerado
+│       └── etapa01_denoising_metrics.csv            # tabela consolidada da Etapa 01
 ├── docs/
-│   ├── visao_geral.md                             # este arquivo
-│   ├── agents.md                                  # guia para agentes Claude
-│   ├── data_dictionary.md                         # tipos WFDB
-│   ├── mitdb_record_inventory_dictionary.md       # colunas do CSV
-│   └── src/                                       # docs por módulo
+│   ├── visao_geral.md                              # este arquivo
+│   ├── agents.md                                   # guia para agentes Claude
+│   ├── etapa_01_denoising.md                       # guia didático da Etapa 01
+│   ├── data_dictionary.md                          # tipos WFDB
+│   ├── mitdb_record_inventory_dictionary.md        # colunas do CSV
+│   └── src/                                        # docs por módulo
 ├── notebooks/
-│   └── 01_EDA_Initial_Inspection.ipynb            # EDA inicial
+│   ├── 01_EDA_Initial_Inspection.ipynb             # EDA inicial
+│   └── 02_Denoising_FIR.ipynb                      # FIR + alternativas (Etapa 01)
 ├── src/
-│   ├── config.py                                  # caminhos centralizados
+│   ├── config.py                                   # caminhos centralizados
 │   ├── data/
-│   │   ├── download_dataset.py                    # download MIT-BIH
-│   │   └── summarize_mitdb_records.py             # inventário tabular
-│   └── visualization/                             # placeholder
+│   │   ├── download_dataset.py                     # download MIT-BIH
+│   │   └── summarize_mitdb_records.py              # inventário tabular
+│   ├── preprocessing/                              # Etapa 01
+│   │   ├── fir_filters.py                          # FIR fase linear (janela)
+│   │   ├── iir_filters.py                          # Butterworth alternativo
+│   │   ├── simple_filters.py                       # MA + filtragem espectral
+│   │   ├── segments.py                             # seleção de janelas com símbolo + ruído
+│   │   └── metrics.py                              # métricas padronizadas
+│   └── visualization/
+│       └── ecg_plots.py                            # overlays, PSD, resposta de filtro
 ├── pyproject.toml
 └── requirements.txt
 ```
@@ -86,45 +97,47 @@ DSP_Project/
 
 - `notebooks/01_EDA_Initial_Inspection.ipynb`: carrega registro 100, lê anotações `.atr`, inspeciona formas de onda
 
+### 4.5 Denoising — Etapa 01 (concluída)
+
+Implementação modular em `src/preprocessing/`:
+
+- `fir_filters.py`: projeto FIR pelo método da janela (Hamming) — passa-alta para BW, rejeita-faixa para PLI, passa-baixa para EMG. Aplicação via `filtfilt` (fase zero), `lfilter` com compensação de atraso e `fftconvolve` (convolução rápida).
+- `iir_filters.py`: alternativa Butterworth de ordem baixa via `sosfiltfilt`.
+- `simple_filters.py`: média móvel (incl. notch exato em 60 Hz com N=6 em fs=360 Hz) e filtragem direta no domínio da frequência.
+- `segments.py`: seleção de janelas reais que contêm um símbolo-alvo de anotação WFDB e maximizam um indicador heurístico de ruído.
+- `metrics.py`: métricas espectrais aplicáveis a sinal real (sem ground truth) — redução em banda alvo (dB), preservação de banda passante (dB), deslocamento RMS de picos R em ms.
+
+Trabalhamos exclusivamente com **sinais reais** — três registos (100 Normal, 109 LBBB, 118 RBBB), com janela de duração configurável (`SAMPLE_DURATION_SEC` no notebook). Demonstração e comparação no notebook `notebooks/02_Denoising_FIR.ipynb`. Tabela consolidada exportada em `data/processed/etapa01_denoising_metrics.csv`. Justificativa didática completa em [`docs/etapa_01_denoising.md`](etapa_01_denoising.md).
+
 ---
 
-## 5. O Que Falta para a Etapa 01
+## 5. Etapa 01 — Status dos Requisitos (PDF)
 
-O PDF `Projeto_02_Etapa_01.pdf` define os requisitos. Abaixo o mapeamento do que ainda precisa ser feito:
+### 5.1 Pipeline de Denoising
 
-### 5.1 Pipeline de Denoising (obrigatório)
+| Requisito | Status | Onde |
+|-----------|--------|------|
+| Filtro FIR com fase linear (técnica principal) | **Concluído** | `src/preprocessing/fir_filters.py` |
+| Remoção de baseline wander (HP 0,5 Hz) | **Concluído** | notebook §4 |
+| Rejeição de PLI 60 Hz (BS 59–61 Hz) | **Concluído** | notebook §5 |
+| Limitação de banda superior (LP 40 Hz) | **Concluído** | notebook §6 |
+| Cadeia FIR completa (HP → BS → LP) | **Concluído** | notebook §7 |
+| FIR via FFT (convolução rápida) | **Concluído** | notebook §8 |
+| Técnica alternativa — IIR Butterworth | **Concluído** | notebook §9 |
+| Técnica alternativa — Média móvel | **Concluído** | notebook §10 |
+| Técnica alternativa — Filtragem espectral direta | **Concluído** | notebook §11 |
+| Filtragem em fase zero (`filtfilt`/`sosfiltfilt`) | **Concluído** | aplicada em todas as cadeias |
 
-| Requisito | Status | Observação |
-|-----------|--------|------------|
-| Filtro FIR com fase linear (técnica principal) | **Faltando** | Nenhum código de filtragem existe ainda |
-| Remoção de baseline wander (passa-alta ~0.5 Hz) | **Faltando** | — |
-| Rejeição de PLI 60 Hz (rejeita-faixa estreito) | **Faltando** | — |
-| Limitação de banda superior (~35–40 Hz, passa-baixa) | **Faltando** | — |
-| Ao menos uma técnica alternativa (IIR, média móvel ou domínio da freq.) | **Faltando** | — |
-| Filtragem em fase zero (`sosfiltfilt`) para processamento offline | **Faltando** | — |
+### 5.2 Justificativa e Avaliação
 
-### 5.2 Justificativa e Avaliação (obrigatório)
-
-| Requisito | Status |
-|-----------|--------|
-| Justificativa técnica das frequências de corte e ordem do filtro | **Faltando** |
-| Visualização comparativa antes/depois da filtragem | **Faltando** |
-| Análise espectral (Welch/FFT) antes e depois | **Faltando** |
-| Preservação morfológica: ondas P, QRS, T | **Faltando** |
-| Estabilidade temporal dos eventos cardíacos pós-filtro | **Faltando** |
-
-### 5.3 Estrutura de Código Sugerida (ainda não existe)
-
-```
-src/
-├── preprocessing/          # a criar
-│   ├── __init__.py
-│   ├── fir_filters.py      # projeto FIR (janela e Parks-McClellan)
-│   ├── iir_filters.py      # alternativa IIR (Butterworth)
-│   └── pipeline.py         # cadeia completa de denoising
-notebooks/
-├── 02_Denoising_FIR.ipynb  # a criar — análise e comparação de filtros
-```
+| Requisito | Status | Onde |
+|-----------|--------|------|
+| Justificativa técnica das frequências de corte e ordem do filtro | **Concluído** | [`etapa_01_denoising.md`](etapa_01_denoising.md) §3 |
+| Visualização comparativa cru × filtrado (overlay) | **Concluído** | notebook (todas as seções) |
+| Análise espectral (Welch) antes e depois | **Concluído** | notebook (todas as seções) |
+| Preservação morfológica e correlação com sinal limpo | **Concluído** | métrica `correlação_clean` |
+| Estabilidade temporal dos eventos cardíacos pós-filtro | **Concluído** | métrica `picos_R_RMS_ms` |
+| Tabela final de comparação entre métodos | **Concluído** | notebook §12 + CSV exportado |
 
 ---
 
@@ -157,4 +170,4 @@ notebooks/
 
 ## 8. Como Atualizar Este Arquivo
 
-Este documento deve ser atualizado a cada etapa concluída. Para cada item da seção 5, mova o status de **Faltando** para **Concluído** e adicione uma referência ao notebook ou módulo correspondente. Ao iniciar uma nova etapa, adicione uma nova seção ao estilo da seção 5 com os requisitos extraídos do PDF da etapa.
+Este documento deve ser atualizado a cada etapa concluída. Para cada item da seção 5, mova o status de **Faltando** para **Concluído** e adicione uma referência ao notebook ou módulo correspondente. Ao iniciar uma nova etapa (Etapa 02 e seguintes), adicione uma nova seção ao estilo da seção 5 com os requisitos extraídos do PDF correspondente, e replique o padrão de estrutura modular adotado em `src/preprocessing/` para a Etapa 01.

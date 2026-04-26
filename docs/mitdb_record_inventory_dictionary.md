@@ -116,34 +116,177 @@ Colunas `aux_rhy_*` (ordem **exacta** no CSV, alinhada com `RHYTHM_AUX_SUBSTRING
 
 Os significados clínicos seguem a convenção WFDB / MIT-BIH; consulte o [WFDB Programmer's Guide — Annotation Codes](https://archive.physionet.org/physiotools/wpg/wpg_36.htm) e o [diretório MIT-BIH](https://www.physionet.org/physiobank/database/html/mitdbdir/).
 
+A tabela abaixo é um resumo. Logo a seguir há uma seção com descrição clínica
+detalhada de cada símbolo e suas implicações para análise/processamento do
+sinal de ECG.
+
 | Símbolo | Coluna | Significado (resumo) |
 |---------|--------|----------------------|
-| N | `ann_sym_N` | Batimento normal |
-| L | `ann_sym_L` | Bloqueio de ramo esquerdo |
-| R | `ann_sym_R` | Bloqueio de ramo direito |
+| N | `ann_sym_N` | Batimento normal (sinusal) |
+| L | `ann_sym_L` | Bloqueio de ramo esquerdo (LBBB) |
+| R | `ann_sym_R` | Bloqueio de ramo direito (RBBB) |
 | B | `ann_sym_B` | Bloqueio de ramo indefinido |
-| A | `ann_sym_A` | Extrassístole atrial |
+| A | `ann_sym_A` | Extrassístole atrial (APC) |
 | a | `ann_sym_a` | Extrassístole atrial aberrante |
-| J | `ann_sym_J` | Extrassístole nodal (nodal prematura) |
+| J | `ann_sym_J` | Extrassístole nodal/juncional prematura |
 | S | `ann_sym_S` | Extrassístole supraventricular |
 | V | `ann_sym_V` | Extrassístole ventricular (PVC) |
 | r | `ann_sym_r` | PVC tipo R-on-T |
 | F | `ann_sym_F` | Fusão de batimento normal e ventricular |
 | e | `ann_sym_e` | Escape atrial |
-| j | `ann_sym_j` | Escape nodal |
+| j | `ann_sym_j` | Escape nodal/juncional |
 | E | `ann_sym_E` | Escape ventricular |
 | / | `ann_sym_SLASH` | Batimento marcado (paced) |
 | f | `ann_sym_f` | Fusão de batimento marcado e normal |
 | x | `ann_sym_x` | Onda P não conduzida |
 | Q | `ann_sym_Q` | Batimento não classificável |
 | \| | `ann_sym_PIPE` | Artefacto / onda tipo QRS isolada (não batimento) |
-| + | `ann_sym_PLUS` | Ritmo (início de mudança de ritmo; contexto aux) |
-| ~ | `ann_sym_TILDE` | Sinal isorrítmico |
+| + | `ann_sym_PLUS` | Mudança de ritmo (vide `aux_note`) |
+| ~ | `ann_sym_TILDE` | Mudança de qualidade do sinal (artefato/ruído) |
 | [ | `ann_sym_LBRACKET` | Início de flutter/fibrilação ventricular |
 | ] | `ann_sym_RBRACKET` | Fim de flutter/fibrilação ventricular |
 | ! | `ann_sym_EXCLAIM` | Onda de flutter ventricular |
 
 **Nota:** `+` e mudanças de ritmo detalhadas aparecem frequentemente em conjunto com texto em `aux_note`; as colunas `aux_rhy_*` tratam sobretudo desse texto.
+
+### Descrição clínica e implicações para o sinal
+
+Esta seção explica, de forma acessível, o que cada símbolo representa
+clinicamente e **quais consequências aparecem na forma de onda do ECG**.
+Essas consequências importam para o nosso pipeline porque um filtro mal
+calibrado pode confundir morfologia anormal com ruído, ou desalinhar
+detectores de QRS treinados em batimentos normais.
+
+#### Batimentos sinusais e de condução
+
+- **N — Batimento normal (sinusal).** Despolarização originada no nó
+  sinoatrial (SA), seguida pela sequência fisiológica átrios → nó AV →
+  feixe de His → ramos → ventrículos. Morfologia esperada: onda P, intervalo
+  PR de 120–200 ms, complexo QRS estreito (≤ 110 ms) e onda T positiva nas
+  derivações típicas. **Implicação para processamento:** é a referência
+  para todos os detectores de QRS e para métricas de morfologia. Quase todo
+  artigo de denoising mede preservação tomando N como ground truth de forma.
+
+- **L — Bloqueio de ramo esquerdo (LBBB).** A onda de despolarização não
+  desce pelo ramo esquerdo do feixe de His; o ventrículo esquerdo é
+  ativado tardiamente pela propagação miocárdica vinda do ventrículo
+  direito. **Consequências no sinal:** QRS **alargado (≥ 120 ms)**, com
+  morfologia bizarra — entalhe ou platô no R em V5–V6 e em DI, S profundo
+  em V1. A onda T é tipicamente discordante (oposta ao QRS).
+  **Implicação para processamento:** o conteúdo espectral do QRS de LBBB
+  é deslocado para frequências mais baixas (porque o complexo é mais
+  longo); um filtro passa-baixa muito agressivo (< 30 Hz) pode arredondar
+  ainda mais essas bordas e confundir detectores. **Registos MIT-BIH com
+  LBBB:** 109, 111, 207 e 214.
+
+- **R — Bloqueio de ramo direito (RBBB).** Análogo ao LBBB, mas no ramo
+  direito. **Consequências no sinal:** QRS alargado (≥ 120 ms), padrão
+  rsR' em V1 (a famosa "orelha de coelho") e onda S empastada em DI/V6.
+  **Implicação para processamento:** o segundo R' em V1 é uma deflexão
+  de banda mais alta que pode ser parcialmente atenuada por LP em 35 Hz —
+  preferimos 40 Hz para preservá-lo. **Registos MIT-BIH com RBBB:** 118,
+  124, 212, 231, 232.
+
+- **B — Bloqueio de ramo indefinido.** Aplica-se quando há claramente um
+  bloqueio de ramo, mas a derivação registrada não permite distinguir
+  esquerdo de direito. Não está presente nos registos MIT-BIH disponíveis,
+  mas o código existe na convenção WFDB.
+
+#### Extrassístoles (batimentos prematuros, ectópicos)
+
+- **A / a — Extrassístole atrial (APC) e atrial aberrante.** Originada num
+  foco atrial fora do nó SA. **Consequências no sinal:** onda P de
+  morfologia diferente (pode estar invertida ou escondida na T anterior),
+  PR encurtado ou alongado, QRS geralmente **estreito** (a "a" indica
+  condução aberrante, com QRS levemente alargado). **Implicação:** o
+  trecho onde a P está distorcida pode confundir filtros com componente
+  forte em < 5 Hz; também afeta detectores baseados em intervalos R-R.
+
+- **J — Extrassístole nodal/juncional prematura.** Origem no nó AV ou
+  região juncional. **Consequências no sinal:** P ausente, retrógrada
+  (após o QRS) ou negativa em DII; QRS geralmente estreito, salvo
+  condução aberrante. **Implicação:** a perda do componente atrial muda a
+  distribuição espectral em < 10 Hz; no entanto não afeta a banda do QRS.
+
+- **S — Extrassístole supraventricular (genérica).** Categoria abrangente
+  para batimentos prematuros que se originam acima dos ventrículos quando
+  não se distingue bem entre atrial e juncional.
+
+- **V — Extrassístole ventricular (PVC).** Originada num foco ventricular,
+  contornando a condução normal. **Consequências no sinal:** **QRS muito
+  alargado (≥ 120 ms) e bizarro**, sem onda P precedente, onda T
+  discordante e em alta amplitude, seguida de pausa compensatória.
+  **Implicação:** PVCs têm conteúdo espectral que se estende mais para
+  altas frequências do que o QRS normal e morfologia muito variável; um
+  passa-baixa em 40 Hz pode atenuar a transição rápida do início do QRS.
+  PVCs são também a categoria que mais sofre quando há vazamento de PLI
+  (60 Hz) na banda do QRS.
+
+- **r — PVC tipo R-on-T.** PVC que cai sobre a onda T do batimento
+  anterior. Clinicamente perigoso (gatilho de TV/FV).
+  **Implicação:** o detector de pico R pode duplicar localmente; é um caso
+  excelente para testar estabilidade temporal da localização de eventos.
+
+- **F — Fusão entre batimento normal e ventricular.** Ocorre quando um
+  estímulo ventricular ectópico é simultâneo a uma despolarização normal,
+  produzindo morfologia híbrida (parcialmente alargada).
+  **Implicação:** caso de teste para correlação morfológica — o batimento
+  é nem normal nem PVC puro; filtros agressivos podem distorcê-lo de
+  forma desproporcional.
+
+#### Batimentos de escape (subsidiários)
+
+- **e — Escape atrial.** Surge quando o nó SA falha por tempo suficiente
+  para um foco atrial assumir, em ritmo lento.
+- **j — Escape nodal/juncional.** Idem, com origem na junção AV; QRS
+  estreito, P ausente ou retrógrada.
+- **E — Escape ventricular.** Foco ventricular assume; QRS alargado e
+  lento. Importante distinguir de PVC: o escape vem **depois** de uma
+  pausa, o PVC vem **antes** do tempo esperado.
+
+**Implicação geral para escapes:** ritmos muito lentos podem mascarar BW
+(o sinal verdadeiro tem componente em 0,4–0,8 Hz); um corte HP em 0,5 Hz
+preserva-os, em 1 Hz começa a deformá-los.
+
+#### Estimulação artificial (marca-passo)
+
+- **/ — Batimento marcado (paced).** Estímulo elétrico de marca-passo,
+  visível no ECG como **spike de marca-passo**: deflexão muito estreita,
+  abrupta, geralmente bifásica, precedendo o QRS.
+  **Implicação:** o spike tem **conteúdo espectral muito alto** (até
+  centenas de Hz). Um passa-baixa em 40 Hz remove o spike, o que pode ser
+  desejável (estética) ou não (perde-se a evidência do marca-passo).
+- **f — Fusão de batimento marcado e normal.** Spike de marca-passo
+  superposto a despolarização espontânea. Os registos 102, 104, 107 e 217
+  contêm batimentos marcados.
+
+#### Outros marcadores
+
+- **x — Onda P não conduzida.** Atividade atrial (P) que não gera QRS
+  (típico de bloqueio AV avançado). **Implicação:** detectores por R-R
+  podem pular esses eventos; só uma análise morfológica mais fina os capta.
+- **Q — Batimento não classificável.** Anotação refere-se a um batimento
+  que o anotador não pôde classificar (qualidade de sinal ruim ou
+  morfologia atípica).
+  **Implicação:** correlaciona com trechos de ruído elevado.
+
+#### Marcadores que NÃO são batimentos
+
+- **\| — Artefato / onda tipo QRS isolada.** Sinaliza um pico no sinal
+  que **parece um QRS mas não é** (eletrodo movendo, transiente).
+  Excelente proxy para "trecho com problema", já que o anotador o
+  marcou explicitamente como artefato.
+- **+ — Mudança de ritmo.** Marcador de transição entre ritmos; o texto
+  associado fica em `aux_note` (ver colunas `aux_rhy_*`).
+- **~ — Mudança de qualidade do sinal.** Marca o início de um trecho com
+  qualidade alterada (ruído, eletrodo solto, etc.).
+  **Implicação:** outro proxy direto para "trecho com problema".
+- **[ , ] , ! — Flutter/fibrilação ventricular.** Delimitam (`[ ... ]`) e
+  marcam (`!`) ondas de flutter ventricular. Aparecem nos registos
+  207 e 217. **Implicação:** o sinal nessas regiões é caótico, com
+  conteúdo espectral espalhado em toda a banda; nenhum filtro linear
+  tradicional "limpa" flutter — apenas atenua componentes claramente
+  fora da banda do ECG.
 
 ---
 

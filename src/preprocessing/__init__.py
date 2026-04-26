@@ -6,7 +6,7 @@ from src.preprocessing import (
     iir_filters,
     simple_filters,
     metrics,
-    synthetic_noise,
+    segments,
 )
 
 __all__ = [
@@ -14,5 +14,5 @@ __all__ = [
     "iir_filters",
     "simple_filters",
     "metrics",
-    "synthetic_noise",
+    "segments",
 ]

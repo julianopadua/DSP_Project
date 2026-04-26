@@ -56,6 +56,75 @@ def design_bandstop(
     return signal.firwin(n, [low_hz, high_hz], fs=fs, window=window, pass_zero=True)
 
 
+def _remez_numtaps_default(fs: float, transition_hz: float) -> int:
+    """N moderado para Parks-McClellan: equiripple não exige N tão alto quanto Hamming.
+
+    Usa N ≈ fs / Δf (com piso 101 e teto 801), arredondado para ímpar. Ordens
+    muito altas em conjunto com bandas próximas de 0 Hz tendem a impedir a
+    convergência do algoritmo de Remez.
+    """
+    n = int(np.clip(round(fs / transition_hz), 101, 801))
+    return n + 1 if n % 2 == 0 else n
+
+
+def design_highpass_remez(
+    fs: float,
+    cutoff_hz: float,
+    transition_hz: float = 1.0,
+    numtaps: int | None = None,
+) -> np.ndarray:
+    """FIR passa-alta projetado por Parks-McClellan (equiripple)."""
+    if numtaps is None:
+        numtaps = _remez_numtaps_default(fs, transition_hz)
+    edge_stop = max(0.05, cutoff_hz - transition_hz / 2.0)
+    edge_pass = cutoff_hz + transition_hz / 2.0
+    return signal.remez(
+        numtaps, [0.0, edge_stop, edge_pass, fs / 2.0], [0.0, 1.0],
+        fs=fs, maxiter=50, grid_density=32,
+    )
+
+
+def design_lowpass_remez(
+    fs: float,
+    cutoff_hz: float,
+    transition_hz: float = 8.0,
+    numtaps: int | None = None,
+) -> np.ndarray:
+    """FIR passa-baixa projetado por Parks-McClellan (equiripple)."""
+    if numtaps is None:
+        numtaps = _remez_numtaps_default(fs, transition_hz)
+    edge_pass = max(0.05, cutoff_hz - transition_hz / 2.0)
+    edge_stop = cutoff_hz + transition_hz / 2.0
+    return signal.remez(
+        numtaps, [0.0, edge_pass, edge_stop, fs / 2.0], [1.0, 0.0],
+        fs=fs, maxiter=50, grid_density=32,
+    )
+
+
+def design_bandstop_remez(
+    fs: float,
+    low_hz: float,
+    high_hz: float,
+    transition_hz: float = 1.0,
+    numtaps: int | None = None,
+) -> np.ndarray:
+    """FIR rejeita-faixa projetado por Parks-McClellan (equiripple)."""
+    if numtaps is None:
+        numtaps = _remez_numtaps_default(fs, transition_hz)
+    bands = [
+        0.0,
+        max(0.05, low_hz - transition_hz / 2.0),
+        low_hz,
+        high_hz,
+        high_hz + transition_hz / 2.0,
+        fs / 2.0,
+    ]
+    return signal.remez(
+        numtaps, bands, [1.0, 0.0, 1.0],
+        fs=fs, maxiter=50, grid_density=32,
+    )
+
+
 def apply_filtfilt(h: np.ndarray, x: np.ndarray) -> np.ndarray:
     """Filtragem em fase zero (forward-backward). Magnitude ao quadrado e atraso nulo."""
     return signal.filtfilt(h, [1.0], x)

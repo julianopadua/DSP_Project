@@ -30,3 +30,6 @@ build/
 *.desktop.ini
 .claude/
 *agents.md
+*etapa_01_denoising.md
+*etapa_01_denoising_v2.md
+*visao_geral.md
