@@ -33,3 +33,5 @@ build/
 *etapa_01_denoising.md
 *etapa_01_denoising_v2.md
 *visao_geral.md
+*02_Denoising_FIR.ipynb
+*03_Denoising_Etapa01.ipynb
