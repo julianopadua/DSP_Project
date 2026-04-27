@@ -1,6 +1,6 @@
 # Projeto 2 - DSP em ECG (base MIT-BIH) - Grupo 6
 
-> Pedro Arthur - RA:
+> Pedro Arthur - RA: 814248
 > Juliano Eleno Silva Pádua - RA: 800812
 > Matheo - RA:
 
