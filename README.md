@@ -2,7 +2,7 @@
 
 > Pedro Arthur - RA: 814248
 > Juliano Eleno Silva Pádua - RA: 800812
-> Matheo - RA:
+> Matheo - RA: 821293
 
 Esse projeto baixa a base acadêmica do MIT-BIH para **processamento digital de sinais** aplicado ao ECG: etapas futuras incluirão filtragem FIR, convolução, filtros de Gabor unidimensionais e análise tempo-frequência. Aqui, realiza-se **ingestão de dados**, **caminhos centralizados**, **documentação** e um **notebook inicial de EDA** para a base MIT-BIH Arrhythmia em formato WFDB.
 
