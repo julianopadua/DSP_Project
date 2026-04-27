@@ -133,17 +133,6 @@ A implementação dos códigos utilizados na Etapa 01 está no folder [`src/prep
 | [`src/preprocessing/segments.py`](src/preprocessing/segments.py) | Segmentação dos sinais |
 | [`src/preprocessing/metrics.py`](src/preprocessing/metrics.py) | Métricas de avaliação |
 
-## Mapa da documentação (módulos)
-
-| Código | Documentação |
-|--------|----------------|
-| [`src/config.py`](src/config.py) | [`docs/src/config.md`](docs/src/config.md) |
-| [`src/__init__.py`](src/__init__.py) | [`docs/src/__init__.md`](docs/src/__init__.md) |
-| [`src/data/__init__.py`](src/data/__init__.py) | [`docs/src/data/__init__.md`](docs/src/data/__init__.md) |
-| [`src/data/download_dataset.py`](src/data/download_dataset.py) | [`docs/src/data/download_dataset.md`](docs/src/data/download_dataset.md) |
-| [`src/visualization/__init__.py`](src/visualization/__init__.py) | [`docs/src/visualization/__init__.md`](docs/src/visualization/__init__.md) |
-| Tipos de ficheiro WFDB (`.hea`, `.dat`, `.atr`) | [`docs/data_dictionary.md`](docs/data_dictionary.md) |
-
 ## Referências
 
 1. Moody GB, Mark RG. The impact of the MIT-BIH Arrhythmia Database. IEEE Eng Med Biol (May-June 2001).
