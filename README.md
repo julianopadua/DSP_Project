@@ -15,7 +15,7 @@ Esse projeto baixa a base acadêmica do MIT-BIH para **processamento digital de 
 5. [Higiene de notebooks no Git (nbstripout)](#higiene-de-notebooks-no-git-nbstripout)
 6. [Download da base MIT-BIH](#download-da-base-mit-bih)
 7. [Sumarização dos registos MIT-BIH](#sumarização-dos-registos-mit-bih)
-8. [Execução do notebook de EDA](#execução-do-notebook-de-eda)
+8. [Execução do notebook da Etapa 01](#execução-do-notebook-da-etapa-01)
 9. [Mapa da documentação (módulos)](#mapa-da-documentação-módulos)
 10. [Referências](#referências)
 
@@ -110,17 +110,28 @@ Para acelerar uma execução inicial (sem cálculo de ruído), pode usar:
 python -m src.data.summarize_mitdb_records --skip-noise
 ```
 
-## Execução do notebook de EDA
+## Execução do notebook da Etapa 01
 
-Pode abrir e executar o notebook diretamente: abra `notebooks/01_EDA_Initial_Inspection.ipynb` e execute as células sequencialmente. Confirme que o passo de download foi concluído para que existam ficheiros WFDB sob `data/raw/`.
+O notebook da Etapa 01 está em [`notebooks/01_Etapa.ipynb`](notebooks/01_Etapa.ipynb). Abra o arquivo e execute as células sequencialmente. Confirme que o passo de download foi concluído para que existam arquivos WFDB sob `data/raw/`.
 
 Alternativa por terminal (abre o servidor clássico do Jupyter no browser):
 
 ```bash
-jupyter notebook notebooks/01_EDA_Initial_Inspection.ipynb
+jupyter notebook notebooks/01_Etapa.ipynb
 ```
 
-O notebook importa `src.config` (incluindo `mitdb_record_dir`) e utiliza `wfdb` para carregar o registo **100** e as anotações `atr`.
+O notebook importa `src.config` (incluindo `mitdb_record_dir`) e utiliza `wfdb` para carregar registos da base MIT-BIH e suas anotações `atr`.
+
+A implementação dos códigos utilizados na Etapa 01 está no folder [`src/preprocessing/`](src/preprocessing/). O notebook funciona como camada de apresentação e análise, importando as funções desse pacote. Os módulos disponíveis são:
+
+| Módulo | Função |
+|--------|--------|
+| [`src/preprocessing/fir_filters.py`](src/preprocessing/fir_filters.py) | Filtros FIR aplicados ao ECG |
+| [`src/preprocessing/iir_filters.py`](src/preprocessing/iir_filters.py) | Filtros IIR aplicados ao ECG |
+| [`src/preprocessing/gabor_filters.py`](src/preprocessing/gabor_filters.py) | Filtros de Gabor unidimensionais |
+| [`src/preprocessing/simple_filters.py`](src/preprocessing/simple_filters.py) | Filtros simples de referência |
+| [`src/preprocessing/segments.py`](src/preprocessing/segments.py) | Segmentação dos sinais |
+| [`src/preprocessing/metrics.py`](src/preprocessing/metrics.py) | Métricas de avaliação |
 
 ## Mapa da documentação (módulos)
 
