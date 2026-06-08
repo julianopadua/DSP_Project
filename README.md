@@ -66,6 +66,28 @@ pip install -e .
 
 Utiliza [`pyproject.toml`](pyproject.toml) com Setuptools. Os pacotes de execução permanecem apenas em `requirements.txt`.
 
+## Atalhos com Makefile
+
+Depois de criar a `.venv`, os comandos recorrentes do projeto podem ser
+executados por `make` a partir da raiz do repositório:
+
+```bash
+make setup
+make data
+make inventory
+make paper-build
+make paper-run
+make paper-figures
+make paper-pdf
+make test
+```
+
+Para uma execução curta de sanidade do pipeline do artigo:
+
+```bash
+make paper-smoke
+```
+
 ## Higiene de notebooks no Git (nbstripout)
 
 Após instalar dependências, **registe o filtro de limpeza de notebooks** neste repositório Git:

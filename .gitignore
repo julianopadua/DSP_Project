@@ -4,6 +4,11 @@ __pycache__/
 *$py.class
 .pytest_cache/
 
+
+docs/paper
+docs/paper/article/
+llm-wiki/
+USER_GUIDE.md
 # Virtual environments
 .venv/
 venv/
@@ -11,6 +16,9 @@ env/
 
 # Jupyter
 .ipynb_checkpoints/
+notebooks/__pycache__/
+notebooks/backup/
+notebooks/**/*-checkpoint.ipynb
 
 # OS
 .DS_Store
@@ -21,6 +29,12 @@ data/raw/**
 !data/raw/.gitkeep
 data/processed/**
 !data/processed/.gitkeep
+*.parquet
+*.joblib
+*.pkl
+*.npy
+*.npz
+*.h5
 
 # Build / packaging
 *.egg-info/

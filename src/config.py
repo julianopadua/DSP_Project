@@ -10,12 +10,26 @@ PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent
 
 RAW_DATA_DIR: Path = PROJECT_ROOT / "data" / "raw"
 PROCESSED_DATA_DIR: Path = PROJECT_ROOT / "data" / "processed"
+PAPER_PROCESSED_DIR: Path = PROCESSED_DATA_DIR / "paper"
+DOCS_DIR: Path = PROJECT_ROOT / "docs"
+PAPER_DIR: Path = DOCS_DIR / "paper"
+PAPER_ARTICLE_DIR: Path = PAPER_DIR / "article"
+PAPER_FIGURES_DIR: Path = PAPER_ARTICLE_DIR / "figures"
+LLM_WIKI_DIR: Path = PROJECT_ROOT / "llm-wiki"
+LLM_WIKI_RAW_DIR: Path = LLM_WIKI_DIR / "raw"
 
 
 def ensure_data_dirs() -> None:
     """Cria os diretórios de dados brutos e processados, se ainda não existirem."""
     RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
     PROCESSED_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    PAPER_PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def ensure_paper_dirs() -> None:
+    """Cria os diretórios de artefatos do paper, se ainda não existirem."""
+    PAPER_ARTICLE_DIR.mkdir(parents=True, exist_ok=True)
+    PAPER_FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def mitdb_record_dir() -> Path:
