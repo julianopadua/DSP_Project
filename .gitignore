@@ -51,3 +51,10 @@ build/
 *03_Denoising_Etapa01.ipynb
 *script_apresentacao_fase1.md
 /docs/visao_geral.md
+
+# Agent / AI Assistant / IDE tracks
+.gemini/
+.cursorrules
+.cline/
+.vscode/
+scratch_parse.py
