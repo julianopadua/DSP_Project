@@ -132,8 +132,7 @@ def audit_git_policy() -> list[str]:
         if git_check_ignore(sample):
             issues.append(f"deveria entrar no Git, mas esta ignorado: {sample}")
     for sample in IGNORED_SAMPLES:
-        path = PROJECT_ROOT / sample
-        if path.exists() and not git_check_ignore(sample):
+        if not git_check_ignore(sample):
             issues.append(f"deveria permanecer ignorado: {sample}")
     for name in GENERATED_LATEX:
         path = ARTICLE_DIR / name
