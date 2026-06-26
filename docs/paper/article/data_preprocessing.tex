@@ -28,6 +28,10 @@ descartadas para manter duração constante em todos os estágios. O sinal filtr
 \texttt{filtfilt} em janelas curtas aumentaria artefatos de borda. A cadeia FIR
 usa janela de Hamming, passa-alta em 0,5 Hz, rejeita-faixa de 59 a 61 Hz e
 passa-baixa em 40 Hz.
+O rejeita-faixa foi mantido no protocolo do artigo para reproduzir a execução
+completa já avaliada. Como o passa-baixa subsequente também atenua 60 Hz, essa
+etapa deve ser lida como uma proteção conservadora contra energia residual de
+rede, não como evidência de que um notch seja sempre necessário nessa cadeia.
 
 \begin{figure}[!htbp]
   \centering

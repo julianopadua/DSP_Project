@@ -4,20 +4,30 @@
 > Juliano Eleno Silva Pádua - RA: 800812
 > Matheo - RA: 821293
 
-Esse projeto baixa a base acadêmica do MIT-BIH para **processamento digital de sinais** aplicado ao ECG: etapas futuras incluirão filtragem FIR, convolução, filtros de Gabor unidimensionais e análise tempo-frequência. Aqui, realiza-se **ingestão de dados**, **caminhos centralizados**, **documentação** e um **notebook inicial de EDA** para a base MIT-BIH Arrhythmia em formato WFDB.
+Esse repositório organiza um projeto acadêmico de **Processamento Digital de
+Sinais** aplicado a ECG da MIT-BIH Arrhythmia Database. O trabalho combina
+ingestão WFDB, filtragem FIR, convolução temporal e por FFT, análise
+tempo-frequência, filtros de Gabor 1D e detectores de anomalia treinados apenas
+com batimentos normais.
+
+Há duas entregas principais:
+
+- um notebook didático da disciplina, com inspeção do ECG, filtros, Gabor,
+  STFT, features e comparação entre SVM supervisionada e One-Class SVM;
+- um artigo em LaTeX que compara One-Class SVM, Isolation Forest e LOF em uma
+  ablação A0-A3 com split inter-paciente.
 
 ## Sumário
 
 1. [Fonte de dados](#fonte-de-dados)
-2. [Estrutura do repositório](#estrutura-do-repositório)
-3. [Configuração do ambiente](#configuração-do-ambiente)
-4. [Instalação editável do pacote](#instalação-editável-do-pacote)
-5. [Higiene de notebooks no Git (nbstripout)](#higiene-de-notebooks-no-git-nbstripout)
-6. [Download da base MIT-BIH](#download-da-base-mit-bih)
-7. [Sumarização dos registos MIT-BIH](#sumarização-dos-registos-mit-bih)
+2. [Pipeline do artigo](#pipeline-do-artigo)
+3. [Estrutura do repositório](#estrutura-do-repositório)
+4. [Configuração do ambiente](#configuração-do-ambiente)
+5. [Atalhos com Makefile](#atalhos-com-makefile)
+6. [Política de Git](#política-de-git)
+7. [Download da base MIT-BIH](#download-da-base-mit-bih)
 8. [Execução do notebook da Etapa 01](#execução-do-notebook-da-etapa-01)
-9. [Mapa da documentação (módulos)](#mapa-da-documentação-módulos)
-10. [Referências](#referências)
+9. [Referências](#referências)
 
 ## Fonte de dados
 
@@ -27,15 +37,40 @@ Esse projeto baixa a base acadêmica do MIT-BIH para **processamento digital de 
 
 Os caminhos para dados brutos e processados estão definidos em [`src/config.py`](src/config.py) (`PROJECT_ROOT`, `RAW_DATA_DIR`, `PROCESSED_DATA_DIR`).
 
+## Pipeline do artigo
+
+O pipeline experimental do artigo vive em [`src/paper/`](src/paper/). Ele
+constrói uma linha por batimento segmentado em torno da anotação MIT-BIH, usa
+`N` como classe normal e trata os demais símbolos válidos não-paced como
+anomalia apenas na avaliação. Os registros paced-heavy `102`, `104`, `107` e
+`217` ficam fora do protocolo v1.
+
+A ablação mantém a mesma população de batimentos em todos os estágios:
+
+| Estágio | Entrada | Features |
+|---------|---------|----------|
+| `A0 raw` | ECG bruto | morfologia e intervalos RR |
+| `A1 filtered` | ECG filtrado | mesmas features de A0 |
+| `A2 spectral` | ECG filtrado | A1 + energia por bandas, entropia, centroide e STFT |
+| `A3 gabor` | ECG filtrado | A2 + respostas Gabor em janelas P/QRS/T |
+
+Os detectores comparados são One-Class SVM, Isolation Forest e Local Outlier
+Factor com `novelty=True`, todos ajustados apenas com batimentos normais do
+conjunto de treino. A métrica principal do artigo é PR-AUC, acompanhada de
+ROC-AUC, precision, recall, F1 e matriz de confusão.
+
 ## Estrutura do repositório
 
 | Caminho | Função |
 |---------|--------|
 | `data/raw/` | arquivos WFDB extraídos (ignorados pelo Git por omissão) |
-| `data/processed/` | Reservado a sinais filtrados ou derivados |
-| `docs/` | Dicionário de dados e documentação Markdown por módulo |
+| `data/processed/` | features, métricas e artefatos derivados, ignorados pelo Git |
+| `docs/` | documentação, enunciado e manuscrito LaTeX do artigo |
+| `docs/paper/article/` | fontes versionados do artigo e figuras finais |
+| `llm-wiki/` | base local de estudo e dossiês, mantida fora do Git |
 | `notebooks/` | Experimentos em Jupyter |
-| `src/` | Pacote Python (`config`, `data`, `visualization`) |
+| `src/` | pacote Python do projeto |
+| `src/paper/` | construção de dataset, ablação, figuras e auditoria do artigo |
 | `requirements.txt` | Dependências Python (fonte única) |
 | `pyproject.toml` | Instalação editável; dependências não duplicadas aqui |
 
@@ -79,6 +114,7 @@ make paper-build
 make paper-run
 make paper-figures
 make paper-pdf
+make paper-audit
 make test
 ```
 
@@ -87,6 +123,36 @@ Para uma execução curta de sanidade do pipeline do artigo:
 ```bash
 make paper-smoke
 ```
+
+O fluxo completo do artigo é:
+
+```bash
+make paper-build
+make paper-run
+make paper-figures
+make paper-pdf
+make paper-audit
+```
+
+`make test` compila os módulos Python do artigo e valida os CSVs gerados em
+`data/processed/paper/`.
+
+## Política de Git
+
+Entram no Git:
+
+- códigos em `src/`, incluindo `src/paper/`;
+- notebooks versionados sem saídas;
+- fontes do artigo em `docs/paper/article/`, incluindo `.tex`, `ref.bib`,
+  `arxiv.sty` e PDFs finais de figuras.
+
+Ficam fora do Git:
+
+- `llm-wiki/`, por ser memória local de estudo e trabalho dos agentes;
+- `data/raw/` e `data/processed/`, exceto `.gitkeep`;
+- `docs/paper/article/main.pdf` e auxiliares de compilação LaTeX;
+- `docs/paper/template_raw/` e `docs/paper/ax.tar`;
+- caches, ambientes virtuais e artefatos de build.
 
 ## Higiene de notebooks no Git (nbstripout)
 
