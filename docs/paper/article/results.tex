@@ -10,22 +10,46 @@ estágio.
   \centering
   \caption{Resultados preliminares da ablação one-class no teste inter-paciente.}
   \label{tab-prelim-metrics}
-  \begin{tabular}{llrrrrr}
+  \begin{tabular}{llrrrrrr}
     \toprule
-    Estágio & Detector & Features & PR-AUC & ROC-AUC & Precision & Recall \\
+    Estágio & Detector & Features & PR-AUC & ROC-AUC & Precision & Recall & F1 \\
     \midrule
-    A0 & One-Class SVM & 30 & 0.524 & 0.715 & 0.450 & 0.449 \\
-    A0 & Isolation Forest & 30 & 0.371 & 0.637 & 0.502 & 0.178 \\
-    A0 & LOF & 30 & 0.386 & 0.620 & 0.294 & 0.717 \\
-    A1 & One-Class SVM & 30 & 0.493 & 0.651 & 0.418 & 0.520 \\
-    A1 & Isolation Forest & 30 & 0.464 & 0.707 & 0.395 & 0.296 \\
-    A1 & LOF & 30 & 0.509 & 0.727 & 0.303 & 0.934 \\
-    A2 & One-Class SVM & 47 & 0.500 & 0.644 & 0.399 & 0.545 \\
-    A2 & Isolation Forest & 47 & 0.503 & 0.708 & 0.513 & 0.312 \\
-    A2 & LOF & 47 & 0.405 & 0.669 & 0.290 & 0.942 \\
-    A3 & One-Class SVM & 140 & 0.475 & 0.665 & 0.437 & 0.477 \\
-    A3 & Isolation Forest & 140 & 0.438 & 0.682 & 0.530 & 0.218 \\
-    A3 & LOF & 140 & 0.533 & 0.726 & 0.310 & 0.938 \\
+    A0 & One-Class SVM & 30 & 0.524 & 0.715 & 0.450 & 0.449 & 0.449 \\
+    A0 & Isolation Forest & 30 & 0.371 & 0.637 & 0.502 & 0.178 & 0.263 \\
+    A0 & LOF & 30 & 0.386 & 0.620 & 0.294 & 0.717 & 0.417 \\
+    A1 & One-Class SVM & 30 & 0.493 & 0.651 & 0.418 & 0.520 & 0.463 \\
+    A1 & Isolation Forest & 30 & 0.464 & 0.707 & 0.395 & 0.296 & 0.338 \\
+    A1 & LOF & 30 & 0.509 & 0.727 & 0.303 & 0.934 & 0.458 \\
+    A2 & One-Class SVM & 47 & 0.500 & 0.644 & 0.399 & 0.545 & 0.460 \\
+    A2 & Isolation Forest & 47 & 0.503 & 0.708 & 0.513 & 0.312 & 0.388 \\
+    A2 & LOF & 47 & 0.405 & 0.669 & 0.290 & 0.942 & 0.444 \\
+    A3 & One-Class SVM & 140 & 0.475 & 0.665 & 0.437 & 0.477 & 0.456 \\
+    A3 & Isolation Forest & 140 & 0.438 & 0.682 & 0.530 & 0.218 & 0.309 \\
+    A3 & LOF & 140 & 0.533 & 0.726 & 0.310 & 0.938 & 0.466 \\
+    \bottomrule
+  \end{tabular}
+\end{table*}
+
+\begin{table*}[!htbp]
+  \centering
+  \caption{Matrizes de confusão preliminares no teste inter-paciente.}
+  \label{tab-confusion-matrices}
+  \begin{tabular}{llrrrr}
+    \toprule
+    Estágio & Detector & TN & FP & FN & TP \\
+    \midrule
+    A0 & One-Class SVM & 29137 & 7291 & 7308 & 5956 \\
+    A0 & Isolation Forest & 34076 & 2352 & 10897 & 2367 \\
+    A0 & LOF & 13599 & 22829 & 3749 & 9515 \\
+    A1 & One-Class SVM & 26843 & 9585 & 6372 & 6892 \\
+    A1 & Isolation Forest & 30414 & 6014 & 9339 & 3925 \\
+    A1 & LOF & 7964 & 28464 & 869 & 12395 \\
+    A2 & One-Class SVM & 25538 & 10890 & 6039 & 7225 \\
+    A2 & Isolation Forest & 32491 & 3937 & 9125 & 4139 \\
+    A2 & LOF & 5884 & 30544 & 775 & 12489 \\
+    A3 & One-Class SVM & 28276 & 8152 & 6942 & 6322 \\
+    A3 & Isolation Forest & 33861 & 2567 & 10373 & 2891 \\
+    A3 & LOF & 8743 & 27685 & 823 & 12441 \\
     \bottomrule
   \end{tabular}
 \end{table*}
@@ -47,7 +71,11 @@ estágio.
 
 Os resultados enfraquecem uma narrativa linear de ganho por acúmulo de features.
 One-Class SVM obteve maior PR-AUC em A0, Isolation Forest em A2 e LOF em A3. A
-adição de espectro e Gabor, portanto, não atua como melhora universal. O efeito
-parece depender da geometria induzida por cada detector e da forma como a
-normalidade fica distribuída no espaço de features.
+adição de espectro e Gabor, portanto, não atua como melhora universal. A
+Tabela~\ref{tab-confusion-matrices} também mostra que os limiares internos dos
+detectores induzem regimes operacionais diferentes. LOF alcança recalls altos,
+mas acumula muitos falsos positivos, enquanto Isolation Forest é mais
+conservador e perde mais anomalias. O efeito parece depender da geometria
+induzida por cada detector e da forma como a normalidade fica distribuída no
+espaço de features.
 \FloatBarrier

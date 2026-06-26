@@ -148,6 +148,8 @@ def audit_results_table() -> list[str]:
     if not metrics_path.is_file() or not results_path.is_file():
         return []
     metrics = pd.read_csv(metrics_path)
+    confusion_path = PAPER_PROCESSED_DIR / "confusion_matrices.csv"
+    confusion = pd.read_csv(confusion_path) if confusion_path.is_file() else None
     table_text = results_path.read_text(encoding="utf-8")
     detector_labels = {
         "one_class_svm": "One-Class SVM",
@@ -160,10 +162,19 @@ def audit_results_table() -> list[str]:
         expected = (
             f"{row.stage} & {detector} & {int(row.n_features)} & "
             f"{row.pr_auc:.3f} & {row.roc_auc:.3f} & "
-            f"{row.precision:.3f} & {row.recall:.3f}"
+            f"{row.precision:.3f} & {row.recall:.3f} & {row.f1:.3f}"
         )
         if expected not in table_text:
             issues.append(f"linha de resultados ausente ou desatualizada: {expected}")
+    if confusion is not None:
+        for row in confusion.itertuples(index=False):
+            detector = detector_labels.get(str(row.detector), str(row.detector))
+            expected = (
+                f"{row.stage} & {detector} & {int(row.tn)} & {int(row.fp)} & "
+                f"{int(row.fn)} & {int(row.tp)}"
+            )
+            if expected not in table_text:
+                issues.append(f"linha de matriz de confusao ausente: {expected}")
     return issues
 
 
