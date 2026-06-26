@@ -4,7 +4,7 @@ MPLBACKEND ?= Agg
 PAPER_DIR := docs/paper/article
 SMOKE_DIR := /private/tmp/dsp_paper_smoke
 
-.PHONY: help setup data inventory paper-build paper-run paper-figures paper-pdf paper-all paper-smoke test clean-paper
+.PHONY: help setup data inventory paper-build paper-run paper-figures paper-pdf paper-audit paper-all paper-smoke test clean-paper
 
 help:
 	@printf '%s\n' \
@@ -16,6 +16,7 @@ help:
 		'  make paper-run      executa ablação one-class' \
 		'  make paper-figures  gera figuras do artigo' \
 		'  make paper-pdf      compila o manuscrito LaTeX' \
+		'  make paper-audit    valida texto, figuras, referencias e Git ignore' \
 		'  make paper-all      executa build, ablação, figuras e PDF' \
 		'  make paper-smoke    roda teste curto com registros 100 e 101' \
 		'  make test           compila Python e valida integridade dos CSVs'
@@ -41,6 +42,9 @@ paper-figures:
 
 paper-pdf:
 	latexmk -cd -pdf -interaction=nonstopmode -halt-on-error $(PAPER_DIR)/main.tex
+
+paper-audit:
+	PYTHONDONTWRITEBYTECODE=1 $(PYTHON) -m src.paper.audit_article
 
 paper-all: paper-build paper-run paper-figures paper-pdf
 

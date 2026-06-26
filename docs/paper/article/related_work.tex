@@ -1,0 +1,55 @@
+\label{sec-theory}
+
+\subsection{ECG, morfologia e segmentação}
+
+Um batimento ECG típico apresenta onda P, complexo QRS e onda T. A anotação de
+batimento na MIT-BIH fornece uma referência temporal associada ao evento
+cardíaco, usada no protocolo como centro da janela de extração. A
+Figura~\ref{fig-ecg-schema} mostra as regiões fisiológicas aproximadas usadas
+para organizar as features locais.
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/fig_ecg_waves_schema.pdf}
+  \caption{Batimento ECG com onda P, complexo QRS, onda T, R-peak e janelas
+  aproximadas usadas na extração de features.}
+  \label{fig-ecg-schema}
+\end{figure}
+
+\subsection{Filtragem FIR}
+
+Registros ambulatoriais de ECG podem conter deriva de linha de base,
+interferência de rede e ruído de alta frequência. A cadeia FIR remove o nível
+médio e aplica passa-alta, rejeita-faixa em torno de 60 Hz e passa-baixa com
+janela de Hamming. A aplicação forward-backward fornece fase zero, uma escolha
+compatível com a preservação temporal das anotações. O ganho dessa etapa é
+medido pela comparação entre \texttt{A0 raw} e \texttt{A1 filtered}, sem
+pressupor melhora automática na detecção.
+
+\subsection{STFT e filtros de Gabor}
+
+Estruturas do ECG ocupam escalas temporais distintas. O complexo QRS é curto e
+concentra componentes relativamente rápidas, enquanto P e T tendem a aparecer
+em janelas mais largas e suaves. A STFT resume energia local em janelas curtas;
+filtros de Gabor 1D representam o sinal por átomos localizados no tempo e na
+frequência \citep{gabor1946theory}. A entrada das features Gabor apenas em
+\texttt{A3} isola sua contribuição em relação a morfologia, RR e espectro.
+
+\subsection{Detecção one-class}
+
+One-Class SVM estima uma região de suporte para dados normais
+\citep{scholkopf2001support}. Isolation Forest atribui maior anomalia a pontos
+isolados por menos particionamentos aleatórios \citep{liu2008isolation}. Local
+Outlier Factor compara a densidade de uma amostra com a densidade de seus
+vizinhos \citep{breunig2000lof}. No scikit-learn, o uso de LOF para novelty
+detection requer \texttt{novelty=True} e avaliação em dados diferentes dos dados
+usados no ajuste \citep{sklearnNovelty}.
+
+\subsection{Avaliação inter-paciente e dados desbalanceados}
+
+A separação entre pacientes reduz avaliações otimistas causadas por
+similaridade intra-paciente. Por esse motivo, a divisão DS1 e DS2 usada em
+estudos com MIT-BIH orienta o protocolo experimental
+\citep{mousavi2019inter}. A PR-AUC recebe prioridade narrativa porque anomalias
+são minoria e a curva precision-recall responde diretamente à quantidade de
+falsos positivos entre os casos sinalizados \citep{davis2006prroc}.

@@ -1,0 +1,13 @@
+O pipeline experimental permitiu avaliar filtragem FIR, descritores espectrais
+e respostas Gabor sob a restrição de treino apenas com batimentos normais. A
+execução inter-paciente na MIT-BIH mostrou que o acréscimo de processamento e
+features não produz ganho monotônico. One-Class SVM favoreceu a representação
+bruta, Isolation Forest respondeu melhor aos descritores espectrais, e LOF teve
+seu melhor resultado com features Gabor.
+
+Esses resultados preservam a hipótese como questão experimental, não como
+conclusão fechada. A próxima etapa deve concentrar-se em análise de limiar por
+FPR alvo, seleção ou compressão de features Gabor, comparação com baselines
+supervisionados apenas como referência externa, e inspeção de exemplos de erro.
+O enquadramento deve permanecer como benchmark de DSP e detecção one-class, sem
+promessa de diagnóstico clínico.

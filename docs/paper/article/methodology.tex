@@ -1,0 +1,66 @@
+\subsection{Estágios de ablação}
+
+O protocolo mantém a mesma população de batimentos em todos os estágios e altera
+apenas a representação das features. Dessa forma, diferenças de métrica podem
+ser atribuídas à representação do sinal, não a mudanças na composição do teste.
+
+\begin{table}[!htbp]
+  \centering
+  \caption{Estágios de ablação implementados.}
+  \label{tab-ablation-stages}
+  \begin{tabular}{lll}
+    \toprule
+    Estágio & Entrada & Features \\
+    \midrule
+    A0 raw & ECG bruto & morfologia, janelas P/QRS/T e RR \\
+    A1 filtered & ECG filtrado & mesmas features de A0 \\
+    A2 spectral & ECG filtrado & A1 + bandas, entropia, centroide e STFT \\
+    A3 gabor & ECG filtrado & A2 + respostas Gabor em P/QRS/T \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+As features morfológicas incluem máximo, mínimo, pico-a-pico, energia, área
+absoluta, estatísticas por janelas fisiológicas aproximadas e inclinação. As
+features rítmicas incluem RR anterior, RR posterior e a razão entre esses
+intervalos. As features espectrais incluem energia por bandas, energia relativa,
+frequência dominante, entropia espectral, centroide, largura espectral e
+estatísticas de magnitude da STFT. O banco Gabor usa frequências centrais de 5,
+7, 10, 15, 20 e 30 Hz.
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/fig_gabor_filter_bank.pdf}
+  \caption{Banco de filtros Gabor 1D usado para extrair respostas locais em
+  diferentes frequências centrais.}
+  \label{fig-gabor-bank}
+\end{figure}
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/fig_gabor_response_examples.pdf}
+  \caption{Respostas Gabor em um batimento normal e em um batimento anômalo,
+  com regiões P, QRS e T destacadas.}
+  \label{fig-gabor-response}
+\end{figure}
+
+\subsection{Detectores e métricas}
+
+Os modelos são treinados apenas com batimentos normais do DS1. One-Class SVM usa
+kernel RBF, \texttt{nu=0.05}, \texttt{gamma=scale} e padronização das features.
+Isolation Forest usa 300 árvores, contaminação 0,05 e semente fixa. LOF usa
+\texttt{novelty=True}, 35 vizinhos e contaminação 0,05. Os escores são
+orientados para que valores maiores indiquem maior anomalia.
+
+PR-AUC é a métrica principal. ROC-AUC, precision, recall, F1 e matriz de
+confusão complementam a análise. As predições binárias usam o limiar interno de
+cada detector, controlado por \texttt{nu} ou \texttt{contamination}.
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/fig_pipeline_ablation.pdf}
+  \caption{Pipeline experimental com leitura WFDB, segmentação, split
+  inter-paciente, ablações, detectores one-class e avaliação.}
+  \label{fig-pipeline}
+\end{figure}
+\FloatBarrier

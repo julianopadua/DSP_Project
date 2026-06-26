@@ -1,0 +1,39 @@
+A comparação entre A0 e A1 mostra que a filtragem FIR não deve ser tratada como
+sinônimo de melhora na detecção. A remoção de componentes lentas e de
+interferência pode tornar a morfologia mais regular, mas também altera sinais
+estatísticos que alguns detectores exploram. O One-Class SVM perdeu PR-AUC após
+a filtragem, enquanto Isolation Forest e LOF melhoraram. Essa divergência indica
+que a qualidade visual do sinal e a separabilidade para um detector one-class
+não são propriedades equivalentes.
+
+A entrada de descritores espectrais em A2 favoreceu principalmente Isolation
+Forest. Uma interpretação plausível é que energia por bandas, frequência
+dominante e estatísticas de STFT criam partições úteis para árvores aleatórias,
+sobretudo quando anomalias se afastam por concentração de energia em faixas
+específicas. O mesmo acréscimo reduziu o PR-AUC do LOF em relação a A1, o que
+sugere perda de estrutura local útil ou aumento de dispersão em dimensões que
+não contribuem igualmente para a vizinhança.
+
+As respostas Gabor em A3 produziram o melhor resultado preliminar apenas para
+LOF. O padrão é coerente com a hipótese de que energia tempo-frequência
+localizada em P, QRS e T pode reorganizar vizinhanças locais de batimentos
+normais e anômalos. A mesma representação prejudicou One-Class SVM e Isolation
+Forest em relação aos seus melhores estágios, o que recomenda seleção de
+features, redução dimensional ou ajuste de hiperparâmetros antes de qualquer
+conclusão mais forte sobre Gabor.
+
+A distância entre PR-AUC e métricas em limiar fixo também merece cautela. LOF
+atingiu recalls altos com baixa precision, sinalizando grande número de falsos
+positivos sob o limiar definido por contaminação. A análise por curva
+precision-recall oferece uma leitura mais estável do ranqueamento de anomalias,
+enquanto a matriz de confusão depende diretamente de uma escolha operacional de
+limiar.
+
+A rotulagem binária normal versus anomalia simplifica classes clínicas com
+origens distintas, e as janelas P, QRS e T usadas no protocolo são regiões
+aproximadas em torno do R-peak, não delineações clínicas. Ainda assim, a
+separação inter-paciente, a exclusão de paced no v1 e o treino restrito a
+batimentos normais tornam a primeira execução adequada para uma pergunta de DSP
+experimental. O próximo refinamento deve testar sensibilidade a limiares,
+seleção de features Gabor e inspeção visual de falsos positivos e falsos
+negativos.

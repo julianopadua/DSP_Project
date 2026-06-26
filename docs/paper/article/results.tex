@@ -1,0 +1,53 @@
+\label{sec-results}
+
+A execução completa gerou features para 100.694 batimentos por estágio. O
+treino usou 38.088 batimentos normais do DS1, e o teste avaliou 49.692
+batimentos do DS2, dos quais 13.264 pertenciam à classe anômala. A
+Tabela~\ref{tab-prelim-metrics} resume as métricas preliminares por detector e
+estágio.
+
+\begin{table*}[!htbp]
+  \centering
+  \caption{Resultados preliminares da ablação one-class no teste inter-paciente.}
+  \label{tab-prelim-metrics}
+  \begin{tabular}{llrrrrr}
+    \toprule
+    Estágio & Detector & Features & PR-AUC & ROC-AUC & Precision & Recall \\
+    \midrule
+    A0 & One-Class SVM & 30 & 0.524 & 0.715 & 0.450 & 0.449 \\
+    A0 & Isolation Forest & 30 & 0.371 & 0.637 & 0.502 & 0.178 \\
+    A0 & LOF & 30 & 0.386 & 0.620 & 0.294 & 0.717 \\
+    A1 & One-Class SVM & 30 & 0.493 & 0.651 & 0.418 & 0.520 \\
+    A1 & Isolation Forest & 30 & 0.464 & 0.707 & 0.395 & 0.296 \\
+    A1 & LOF & 30 & 0.509 & 0.727 & 0.303 & 0.934 \\
+    A2 & One-Class SVM & 47 & 0.500 & 0.644 & 0.399 & 0.545 \\
+    A2 & Isolation Forest & 47 & 0.503 & 0.708 & 0.513 & 0.312 \\
+    A2 & LOF & 47 & 0.405 & 0.669 & 0.290 & 0.942 \\
+    A3 & One-Class SVM & 140 & 0.475 & 0.665 & 0.437 & 0.477 \\
+    A3 & Isolation Forest & 140 & 0.438 & 0.682 & 0.530 & 0.218 \\
+    A3 & LOF & 140 & 0.533 & 0.726 & 0.310 & 0.938 \\
+    \bottomrule
+  \end{tabular}
+\end{table*}
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/fig_pr_auc_ablation.pdf}
+  \caption{PR-AUC por estágio e detector na primeira execução preliminar.}
+  \label{fig-pr-auc-ablation}
+\end{figure}
+
+\begin{figure*}[!htbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/fig_precision_recall_curves.pdf}
+  \caption{Curvas precision-recall no teste inter-paciente, comparando A0 a A3
+  para cada detector.}
+  \label{fig-pr-curves}
+\end{figure*}
+
+Os resultados enfraquecem uma narrativa linear de ganho por acúmulo de features.
+One-Class SVM obteve maior PR-AUC em A0, Isolation Forest em A2 e LOF em A3. A
+adição de espectro e Gabor, portanto, não atua como melhora universal. O efeito
+parece depender da geometria induzida por cada detector e da forma como a
+normalidade fica distribuída no espaço de features.
+\FloatBarrier

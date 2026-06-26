@@ -1,0 +1,19 @@
+A detecção de batimentos anômalos em eletrocardiogramas combina desafios de
+processamento de sinais, separação inter-paciente e avaliação em classes
+desbalanceadas. A MIT-BIH Arrhythmia Database foi usada em formato WFDB, com
+canal MLII, janelas centradas nas anotações de batimento e treino restrito a
+batimentos normais. A hipótese avaliada considera que filtragem FIR e features
+tempo-frequência, incluindo filtros de Gabor 1D, podem aumentar a
+separabilidade entre batimentos normais e anômalos sem recorrer a exemplos
+anômalos no ajuste dos modelos. O protocolo rotula batimentos \texttt{N} como
+normais e demais símbolos válidos não-paced como anomalias apenas durante a
+avaliação. Quatro estágios cumulativos organizam a ablação, partindo do sinal
+bruto, passando pelo sinal filtrado, por descritores espectrais e STFT, e
+chegando a respostas Gabor em janelas aproximadas P, QRS e T. One-Class SVM,
+Isolation Forest e Local Outlier Factor em modo novelty foram comparados com
+PR-AUC como métrica principal, acompanhada de ROC-AUC, precision, recall,
+F1-score e matriz de confusão. A primeira execução completa produziu resultados
+mistos, com ganhos dependentes do detector e sem evidência de melhora monotônica
+por filtragem ou Gabor. O valor principal desta versão está na construção de uma
+base experimental reprodutível para discutir as condições em que cada
+representação contribui para a detecção one-class em ECG.

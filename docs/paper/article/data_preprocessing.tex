@@ -1,0 +1,46 @@
+\label{sec-methodology}
+
+\subsection{Base, canal e anotações}
+
+A MIT-BIH Arrhythmia Database reúne registros ambulatoriais de aproximadamente
+30 minutos, amostrados a 360 Hz em dois canais \citep{moody2001mitdb,
+physionetmitdb}. O pipeline lê os arquivos locais com WFDB, seleciona MLII
+quando disponível e usa as anotações \texttt{atr} como referência temporal dos
+batimentos. Na execução atual, todos os 44 registros mantidos após a exclusão
+dos casos paced-heavy possuíam MLII.
+
+\subsection{Rotulagem e exclusões}
+
+O rótulo binário aparece apenas na avaliação. Batimentos \texttt{N} formam a
+classe normal, enquanto os demais símbolos válidos não-paced formam a classe
+anômala. Símbolos técnicos e mudanças de ritmo não entram como amostras. Os
+registros \texttt{102}, \texttt{104}, \texttt{107} e \texttt{217} foram
+removidos do protocolo v1 pela concentração de batimentos paced-heavy.
+Batimentos paced \texttt{/} e fusões paced \texttt{f} também foram removidos,
+evitando que a tarefa se reduza à detecção de marcapasso.
+
+\subsection{Segmentação e filtragem}
+
+Cada amostra experimental corresponde a uma janela completa de 0,25 s antes e
+0,45 s depois da anotação. Janelas que tocam as bordas do registro são
+descartadas para manter duração constante em todos os estágios. O sinal filtrado
+é calculado no registro completo antes da segmentação, pois aplicar
+\texttt{filtfilt} em janelas curtas aumentaria artefatos de borda. A cadeia FIR
+usa janela de Hamming, passa-alta em 0,5 Hz, rejeita-faixa de 59 a 61 Hz e
+passa-baixa em 40 Hz.
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/fig_raw_vs_filtered_beat.pdf}
+  \caption{Batimento normal segmentado no mesmo R-peak antes e depois da cadeia
+  FIR.}
+  \label{fig-raw-filtered}
+\end{figure}
+
+\subsection{Split inter-paciente}
+
+Os registros DS1 fornecem o conjunto de treino e calibração, e DS2 fornece o
+teste final. Nenhum registro aparece simultaneamente em treino e teste. A
+execução completa produziu 100.694 batimentos avaliáveis por estágio, mantendo
+os mesmos \texttt{beat\_id} em \texttt{A0}, \texttt{A1}, \texttt{A2} e
+\texttt{A3}.

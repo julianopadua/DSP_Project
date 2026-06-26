@@ -4,9 +4,18 @@ __pycache__/
 *$py.class
 .pytest_cache/
 
-
-docs/paper
-docs/paper/article/
+# Paper source is versioned, but generated LaTeX outputs and old templates stay local.
+docs/paper/article/main.aux
+docs/paper/article/main.bbl
+docs/paper/article/main.blg
+docs/paper/article/main.fdb_latexmk
+docs/paper/article/main.fls
+docs/paper/article/main.log
+docs/paper/article/main.out
+docs/paper/article/main.pdf
+docs/paper/article/main.synctex.gz
+docs/paper/template_raw/
+docs/paper/ax.tar
 llm-wiki/
 USER_GUIDE.md
 # Virtual environments
