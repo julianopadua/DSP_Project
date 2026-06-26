@@ -10,10 +10,13 @@ docs/paper/article/main.bbl
 docs/paper/article/main.blg
 docs/paper/article/main.fdb_latexmk
 docs/paper/article/main.fls
+docs/paper/article/main.lof
 docs/paper/article/main.log
+docs/paper/article/main.lot
 docs/paper/article/main.out
 docs/paper/article/main.pdf
 docs/paper/article/main.synctex.gz
+docs/paper/article/main.toc
 docs/paper/template_raw/
 docs/paper/ax.tar
 llm-wiki/
