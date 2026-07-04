@@ -1,19 +1,21 @@
-A detecção de batimentos anômalos em eletrocardiogramas combina desafios de
-processamento de sinais, separação inter-paciente e avaliação em classes
-desbalanceadas. A MIT-BIH Arrhythmia Database foi usada em formato WFDB, com
-canal MLII, janelas centradas nas anotações de batimento e treino restrito a
-batimentos normais. A hipótese avaliada considera que filtragem FIR e features
-tempo-frequência, incluindo filtros de Gabor 1D, podem aumentar a
-separabilidade entre batimentos normais e anômalos sem recorrer a exemplos
-anômalos no ajuste dos modelos. O protocolo rotula batimentos \texttt{N} como
-normais e demais símbolos válidos não-paced como anomalias apenas durante a
-avaliação. Quatro estágios cumulativos organizam a ablação, partindo do sinal
-bruto, passando pelo sinal filtrado, por descritores espectrais e STFT, e
-chegando a respostas Gabor em janelas aproximadas P, QRS e T. One-Class SVM,
-Isolation Forest e Local Outlier Factor em modo novelty foram comparados com
-PR-AUC como métrica principal, acompanhada de ROC-AUC, precision, recall,
-F1-score e matriz de confusão. A primeira execução completa produziu resultados
-mistos, com ganhos dependentes do detector e sem evidência de melhora monotônica
-por filtragem ou Gabor. A execução estabelece uma base experimental
-reprodutível para discutir as condições em que cada
-representação contribui para a detecção one-class em ECG.
+A comparação entre detectores one-class para batimentos ECG anômalos exige
+avaliar, no mesmo protocolo, como a escolha do algoritmo responde a
+representações progressivamente mais ricas do sinal e a diferentes custos de
+inferência. A análise usa a MIT-BIH Arrhythmia Database em formato WFDB, com
+canal MLII, janelas centradas nas anotações de batimento, separação
+inter-paciente e treinamento restrito a batimentos normais. O protocolo rotula
+batimentos \texttt{N} como normais e demais símbolos válidos não-paced como
+anomalias apenas na etapa de avaliação. Quatro estágios cumulativos organizam a
+engenharia de features, partindo de descritores morfológicos e intervalo RR no
+sinal bruto, seguindo para o sinal filtrado por FIR, depois para descritores
+espectrais e STFT, e por fim para respostas de filtros de Gabor 1D em janelas
+aproximadas P, QRS e T. One-Class SVM, Isolation Forest e Local Outlier Factor
+em modo novelty são comparados com foco em métricas adequadas ao
+desbalanceamento, sobretudo PR-AUC, além de ROC-AUC, precision, recall,
+F1-score, matriz de confusão e tempo de escore por batimento. Os resultados
+preliminares indicam comportamento não monotônico entre algoritmos e estágios
+de representação, com variações de desempenho que dependem da interação entre
+detector e conjunto de features. A comparação fornece uma base reprodutível
+para discutir quais abordagens one-class são mais competitivas nesse cenário e
+qual par representação-detector oferece melhor compromisso entre separação de
+anomalias e custo computacional.

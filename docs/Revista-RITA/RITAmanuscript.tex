@@ -1,0 +1,1001 @@
+%% LyX 2.1.0 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[english,brazil]{RITA}
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+\usepackage[paperwidth=16cm,paperheight=23cm]{geometry}
+\geometry{verbose,tmargin=3cm,bmargin=3cm,lmargin=1.5cm,rmargin=1.5cm}
+\usepackage{units}
+\usepackage{textcomp}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{accents}
+\usepackage{graphicx}
+\usepackage[dot]{bibtopic}
+
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+\newcommand{\docedilla}[2]{\underaccent{#1\mathchar'30}{#2}}
+\newcommand{\cedilla}[1]{\mathpalette\docedilla{#1}}
+
+%% Because html converters don't know tabularnewline
+\providecommand{\tabularnewline}{\\}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+%
+% exemplo de artigo usando o modelo RITA.cls
+%
+
+\usepackage[brazilian]{babel}
+
+
+%
+% preâmbulo
+%
+\title{Deconvolução Cega Aplicada à Correção de Artefatos de Movimento em Imagens de Vídeo de Microscopia Intravital para Detecção Automática de Leucócitos}
+\author{
+Carlos H. Villa Pinto
+\footnote{Departamento de Computação, UFSCar, Caixa Postal 676\\
+  \texttt{\{carlos.pinto, paulo.freire, bruno.silva, rferrari@dc.ufscar.br\}}}
+\and
+Bruno C. Gregório da Silva
+\footnotemark[1]
+\and
+Paulo G. de Lima Freire
+\footnotemark[1]
+\and
+Danielle Bernardes
+\footnote{Departamento de Fisiologia e Biofísica, UFMG, Caixa Postal 486\\
+  \texttt{\{julianat, danielle@icb.ufmg.br\}}}
+\and
+Juliana Carvalho-Tavares
+\footnotemark[2]
+\and
+Ricardo J. Ferrari
+\footnotemark[1]
+% \and
+% Outro Autor
+% \footnote{Endereço de Outro Autor\\
+%   \texttt{\{outroautor@email.br\}}}
+}
+\RITAvolume{XX}
+\RITAnumber{X}
+\RITAyear{XXXX}
+
+%
+% início do texto
+%
+
+\makeatother
+
+\usepackage{babel}
+\begin{document}
+\maketitle
+\begin{abstract}
+A microscopia intravital (MI) é uma poderosa ferramenta utilizada
+na área biomédica para a observação e imageamento \emph{in vivo} de
+sistemas biológicos, tendo importante aplicação no estudo das interações
+leucócito-endotélio que ocorrem na microcirculação de diversos tecidos
+animais sob condições normais e patológicas. Dado que o controle das
+condições de aquisição das imagens na análise \emph{in vivo }é bastante
+limitado, a presença de borramento e de artefatos de movimento nas
+sequências de quadros de vídeo adquiridas, resultantes da respiração
+e dos batimentos cardíacos inevitáveis do animal, constitui um dos
+principais obstáculos da MI. Isso compromete significativamente a
+detecção e o rastreamento dos leucócitos ao longo dos quadros, tanto
+em análises visuais como nas realizadas por métodos automáticos (computacionais).
+Assim, este trabalho realizou o estudo e aplicação de duas técnicas
+de deconvolução cega (algoritmo \emph{deconvblind} e método de Shan
+\emph{et al}.) para a correção de artefatos de movimento em imagens
+de vídeo de MI, fazendo uma avaliação quantitativa de como tal restauração
+afeta o desempenho de dois métodos de detecção automática de leucócitos
+(casamento de padrões e simetria de fase local). Análises de precisão
+\emph{versus} revocação foram conduzidas a fim de se avaliar a eficácia
+da detecção automática em imagens de boa qualidade visual, imagens
+degradadas por movimento e imagens restauradas com cada uma das técnicas.
+A partir desse estudo, concluiu-se que o método de Shan \emph{et al}.
+possui o maior potencial de restauração dos leucócitos e que as técnicas
+de deconvolução cega de fato têm utilidade como etapa de pré-processamento
+dos vídeos de MI para análises in vivo, especialmente quando o método
+de detecção automática de leucócitos é mais sensível a erros.
+\end{abstract}
+\begin{abstractinenglish} The intravital microscopy (IM) is a powerful
+tool used in the biomedical field for the \emph{in vivo} observation
+and imaging of biological systems, having important application in
+the study of the leukocyte-endothelial interactions which occur in
+the microcirculation of various animal tissues under normal and pathological
+conditions. As the control of the image acquisition conditions in
+the \emph{in vivo} analysis is very limited, the presence of blurring
+and motion artifacts in the acquired video frames sequences, resulting
+from the animal's unavoidable breathing and heartbeats, is one of
+the main obstacles of the IM. This significantly undermines the detection
+and tracking of leukocytes over the frames, both in visual and automatic
+(computational) analyzes. Therefore, this paper carried out the study
+and application of two blind deconvolution techniques (\emph{deconvblind}
+algorithm and Shan \emph{et al}.'s method) for the correction of motion
+artifacts in IM video images, performing a quantitative analysis of
+how such restoration affects the performance of two methods of automatic
+leukocytes detection (template matching and local phase symmetry).
+Precision versus recall analyzes were conducted in order to evaluate
+the effectiveness of the automatic detection in images with good quality,
+images degraded by motion and images restored by each technique. From
+this study, it was concluded that Shan \emph{et al}.'s method has
+the greatest potential to restore the leukocytes and that blind deconvolution
+techniques are in fact useful as a preprocessing step of IM videos
+for \emph{in vivo} analyzes, specially when the method of automatic
+leukocytes detection is more sensitive to errors. \end{abstractinenglish}
+
+
+\section{Introdução\label{sec:Introdu=0000E7=0000E3o}}
+
+No estudo e avaliação das atividades leucocitárias em eventos microcirculatórios,
+em condições normais e patológicas \foreignlanguage{english}{\cite{Santos2005,Santos2008}},
+a medição da velocidade e a contagem dos leucócitos rolantes e aderidos
+às paredes dos vasos sanguíneos é de vital importância para o desenvolvimento
+de novos medicamentos e estratégias terapêuticas no tratamento de
+doenças inflamatórias \foreignlanguage{english}{\cite{Ray2002,Ray2004,Ray2010}}.
+Nesse tipo de estudo, a medida de velocidade e a contagem dos leucócitos
+rolantes e aderidos às paredes dos vasos sanguíneos são realizadas
+a partir de imagens obtidas da técnica de microscopia intravital (MI)
+\cite{Gavins-2004,Norman-2005}. Tal técnica permite a aquisição de
+sequências de imagens (vídeo) que registram os processos dinâmicos
+que ocorrem na microcirculação de animais de teste (geralmente camundongos).
+As sequências de imagens obtidas possuem alta resolução temporal e
+pouca profundidade espacial, possibilitando assim visualizar diretamente
+o que ocorre dentro dos vasos sanguíneos e avaliar as atividades leucocitárias
+\foreignlanguage{english}{\cite{Santos2005,Santos2008}}. 
+
+Tradicionalmente, essa tarefa de análise é realizada de maneira puramente
+visual por um especialista \cite{Chowdhury2010}. Entretanto, trata-se
+de um trabalho repetitivo, que consome muito tempo, e cuja precisão
+das medições pode ser afetada pela fadiga visual do observador e também
+variar significativamente entre diferentes observadores \cite{Zimmer-2006}.
+Assim, o estudo e desenvolvimento de técnicas computacionais automáticas
+para a detecção, o rastreamento e a análise de leucócitos em vídeos
+de MI é de grande importância e figura atualmente como uma área de
+pesquisa bastante ativa \foreignlanguage{english}{\cite{Kilarski2013}}.
+
+Diferentemente do que ocorre na análise \emph{in vitro}, o controle
+das condições de aquisição das imagens de MI é bastante limitado,
+especialmente no que se refere à imobilização do animal em observação.
+Por essa razão, um dos principais obstáculos nesse tipo de análise
+é a presença de borramento e de artefatos de movimento nas sequências
+de quadros de vídeo adquiridas, em decorrência da respiração e dos
+batimentos cardíacos do animal \foreignlanguage{english}{\cite{Lorenz2012a,Vinegoni2012}}.
+Isso compromete significativamente a detecção e o rastreamento dos
+leucócitos ao longo dos quadros, tanto nas análises visuais como naquelas
+realizadas por métodos automáticos.
+
+Até certo ponto, o movimento pode ser corrigido com técnicas lineares
+e não-lineares de co-registro de imagens \cite{Lorenz2012a,Silva2012},
+ou mesmo através de aparatos eletromecânicos especialmente desenvolvidos
+para esse fim \cite{Vinegoni2012}. No entanto, se o movimento do
+animal em observação for muito intenso, como acontece em experimentos
+envolvendo o cérebro e a coluna espinhal, os artefatos produzidos
+podem vir a ser bastante complexos e afetar vários quadros de vídeo
+em sequência, exigindo, assim, a aplicação de sofisticadas técnicas
+de restauração de imagens para que o problema possa ser minimizado
+a fim de possibilitar uma avaliação mais confiável da atividade leucocitária.
+
+Alguns poucos trabalhos foram propostos na literatura para o estudo
+e resolução de tal problema. Shimizu \textit{et al}. \cite{Shimizu-2005}
+descrevem uma tentativa de obter uma solução analítica fechada da
+função de espalhamento de ponto (PSF - \emph{point spread function})
+para sistemas de imageamento por fluorescência para uso em problemas
+de inversão. No entanto, nesse trabalho os autores apenas analisaram
+o efeito de borramento causado pela dispersão da luz pelo tecido entre
+a fonte fluorescente e a superfície da pele do animal de teste. Nenhuma
+atenção especial foi dada ao problema de distorção causado na imagem
+pelo movimento do animal. Outro trabalho relacionado a esse tema de
+pesquisa foi proposto por Niesner \textit{et al}. \cite{Niesner-2007},
+no qual os autores analisaram a degradação da PSF causada pela transmissão
+de luz através de amostras opticamente densas e determinaram que isso
+previne a resolução de pequenos detalhes localizados profundamente
+dentro das amostras. Eles também verificaram que a PSF é fortemente
+dependente do tipo de tecido analisado e que a aplicação de uma PSF
+dependente da profundidade de imageamento no caso da deconvolução
+tridimensional, pode restaurar a qualidade máxima das imagens degradadas.
+De maneira similar ao trabalho de Shimizu \textit{et al}. \cite{Shimizu-2005},
+o efeito de borramento estudado e corrigido via deconvolução de imagens
+não investiga a degradação causada por movimento do animal de teste,
+mas sim, a degradação causada por características ópticas, intrínsecas
+do sistema de imageamento.
+
+Com base no problema exposto, o presente trabalho realizou o estudo
+e aplicação de técnicas de deconvolução cega para a correção de artefatos
+de movimento em vídeos de MI, avaliando quantitativamente como tal
+correção afeta o desempenho de duas técnicas de detecção automática
+de leucócitos.
+
+Este artigo está organizado da seguinte maneira: na Seção \ref{sec:Fundamenta=0000E7=0000E3o-te=0000F3rica},
+é feita uma breve revisão dos fundamentos e técnicas utilizadas para
+detecção de leucócitos e deconvolução de imagens. Na Seção \ref{sec:Metodologia},
+são descritos os passos tomados na obtenção do banco de imagens, no
+pré-processamento, na condução dos experimentos e na avaliação dos
+resultados. Na Seção \ref{sec:Resultados-e-discuss=0000E3o}, os resultados
+obtidos são apresentados e discutidos. Por fim, a Seção \ref{sec:Conclus=0000F5es}
+faz as considerações finais.
+
+
+\section{Fundamentação teórica\label{sec:Fundamenta=0000E7=0000E3o-te=0000F3rica}}
+
+Nesta seção são apresentados os fundamentos teóricos referentes as
+técnicas utilizadas neste trabalho.
+
+
+\subsection{Detecção automática de leucócitos\label{sub:Detec=0000E7=0000E3o-autom=0000E1tica-de-leuc=0000F3citos}}
+
+Com o objetivo de avaliar quantitativamente o efeito da restauração
+das imagens de microscopia intravital degradas por artefatos de movimento
+para fins de processamento automático de detecção de leucócitos, duas
+técnicas de detecção de leucócitos foram avaliadas usando um mesmo
+conjunto de imagens, com e sem a aplicação do processo de restauração.
+As técnicas de detecção de leucócitos são descritas com mais detalhes
+nas subseções que se seguem.
+
+
+\subsubsection{Técnica de casamento de padrões (\textit{Template Matching})\label{sub:T=0000E9cnica-de-casamento-de-padr=0000F5es}}
+
+O algoritmo de casamento de padrões (\textit{template matching }\cite{Gonzalez2006}),
+baseado na medida de correlação cruzada normalizada (CCN), é um algoritmo
+de reconhecimento de padrões que realiza a detecção de objetos similares
+em uma imagem $I(x,y)$ tendo como entrada a própria imagem e o objeto
+$w(x,y)$ (padrão ou \textit{template}) a ser detectado. O algoritmo
+utiliza como medida de similaridade o coeficiente de CCN, calculado
+para uma dada posição espacial $(x_{o},y_{o})$ da imagem como:
+\begin{equation}
+\rho(x_{o},y_{o})=\frac{\sum_{x}\sum_{y}\left[I(x,y)-\overline{I}(x,y)\right]\times\left[w\left(x-x_{o},y-y_{o}\right)-\overline{w}\right]}{\sqrt{\sum_{x}\sum_{y}\left[I(x,y)-\overline{I}(x,y)\right]^{2}\cdot\left[w\left(x-x_{o},y-y_{o}\right)-\overline{w}\right]^{2}}},\label{eq:coeficiente_correlacao}
+\end{equation}
+
+
+\noindent onde $\overline{w}$ é o valor médio dos pixels em $w(x,y)$
+(calculado uma única vez), $\overline{I}(x,y)$ é o valor médio de
+$I$ na região coincidente com a posição corrente de $w$ (região
+centralizada em $(x_{o},y_{o})$), e as somas são realizadas apenas
+sobre as coordenadas comuns a $I(x,y)$ e $w(x,y)$. O coeficiente
+de correlação $\rho$ indica o grau de similaridade entre o padrão
+$w$ e a região de pesquisa na imagem $I$ e tem sua escala no intervalo
+de -1 a 1, sendo que $\rho=1$ indica total correspondência entre
+$w$ e uma região de $I$, $\rho=0$ que não houve correspondência
+e $\rho=-1$ que houve correlação inversa.
+
+No caso específico da detecção de leucócitos, um conjunto de padrões
+$w$, correspondendo a diferentes imagens de leucócitos (com diferentes
+níveis de contrastes), são selecionados nas imagens de vídeo de microscopia.
+A média dos resultados das correlações da imagem $I$ com o conjunto
+de padrões será utilizada para definir a posição dos leucócitos na
+imagem.
+
+
+\subsubsection{Técnica de simetria de fase local\label{sub:T=0000E9cnica-de-simetria-de-fase-local}}
+
+Visto que os leucócitos presentes nas imagens de microscopia intravital
+são células com formato predominantemente circular e, portanto, apresentam
+um alto grau de simetria em relação ao seu centroide, uma medida local
+($\kappa$) que analisa a simetria de fase das estruturas de uma imagem
+foi utilizada para a detecção automática dessas células. Essa medida
+é calculada a partir de mapas locais de amplitude ($A)$ e energia
+($E$) obtidos das partes reais e imaginárias resultantes da convolução
+da imagem original $I$ com um banco de filtros bidimensionais (2D)
+complexos do tipo log-Gabor \cite{Boukerroui-2004,Kuse2012}. 
+
+No domínio da frequência $\left(\omega\right)$, cada filtro do banco
+é formado pela multiplicação de dois componentes, um radial $G_{radial}(\omega_{s})$
+e outro angular $G_{angular}(\theta_{o})$, como:
+
+\begin{equation}
+G(\omega_{s},\theta_{o})_{\mid\sigma_{r},\sigma_{\theta}}=\underbrace{\exp\left(\frac{\left[\log\left(\nicefrac{\omega}{\omega_{s}}\right)\right]^{2}}{2\sigma_{r}^{2}}\right)}_{G_{radial}(\omega)_{|\omega_{s},\sigma_{r}}}\cdot\underbrace{\exp\left(-\frac{(\theta-\theta_{o})^{2}}{2\sigma_{\theta}^{2}}\right)}_{G_{angular}(\theta)_{|\theta_{o},\sigma_{\theta}}},\label{eq:2D_logGabor-1}
+\end{equation}
+
+
+\noindent onde $\omega_{s}$ é a frequência radial central do filtro
+na escala $s$ e $\sigma_{r}=\log\beta$, sendo $\beta$ uma medida
+relacionada à largura de banda em frequência do filtro \cite{Field1987}.
+$\theta_{o}$ é o ângulo de orientação (para a $o$-ésima orientação)
+e $\sigma_{\theta}$ é o desvio padrão que determina a largura de
+banda angular do filtro. O componente radial, $G_{radial}(\omega_{s})$,
+corresponde a uma função Gaussiana com o eixo da frequência na escala
+logarítmica e é concentricamente simétrico à origem no domínio bidimensional
+da frequência. O outro componente do filtro 2D log-Gabor, $G_{angular}(\theta_{o})$,
+é a parte angular que controla a seletividade de orientação do filtro.
+
+\noindent Com o intuito de reduzir a complexidade computacional das
+operações de convolução%
+\footnote{Na convolução de uma imagem $I$ ($N\times N$ pixels) com um filtro
+$G$ ($K\times K$ coeficientes), o número total de multiplicações
+realizadas é dado por $N^{2}K^{2}$. Quando realizado no domínio da
+frequência, o mesmo processo requer $2\times\left(2N^{2}\log_{2}N\right)$
+multiplicações referentes às transformadas de Fourier direta e inversa,
+e $2\times N^{2}$ multiplicações para o janelamento (\textit{windowing
+function}) e filtragem da imagem, totalizando $N^{2}\left(4\log_{2}N+2\right)$
+multiplicações.%
+} entre a imagem original e os filtros log-Gabor, cujos coeficientes
+são representados por matrizes de dimensão $30\times30$, os mapas
+de amplitude, $A_{s,o}(x,y)$, e energia, $E_{s,o}(x,y)$, são calculados
+no domínio da frequência como a multiplicação dos componentes complexos
+da transformada de Fourier da imagem, $\mathcal{F}\left[I\right]$,
+com os coeficientes reais de cada filtro do banco, $G(\omega_{s},\theta_{o})$,
+e assim:
+\begin{equation}
+A_{s,o}(x,y)=\sqrt{Re_{s,o}(x,y)^{2}+Im_{s,o}(x,y)^{2}},\label{eq:amplitude}
+\end{equation}
+
+
+\noindent e
+\begin{equation}
+E_{s,o}(x,y)=\left|Re_{s,o}(x,y)\right|-\left|Im_{s,o}(x,y)\right|,\label{eq:energia}
+\end{equation}
+onde $Re_{s,o}(x,y)$ e $Im_{s,o}(x,y)$ correspondem, respectivamente,
+aos componentes real e imaginário do produto $\mathcal{F}\left[I\right]\cdot G(\omega_{s},\theta_{o})$.
+
+Finalmente, a medida de simetria de fase local é calculada como:
+
+\begin{equation}
+\kappa(x,y)=\frac{\sum_{s=1}^{S}\underset{o=1,2,\ldots,N}{\mathrm{mediana}}\left\{ E_{s,o}\left(x,y\right)\right\} }{\sum_{s=1}^{S}\underset{o=1,2,\ldots,N}{\mathrm{mediana}}\left\{ A_{s,o}\left(x,y\right)\right\} }.\label{eq:medida_de_simetria}
+\end{equation}
+
+
+\noindent A medida $\kappa$ apresenta valores próximos de 1 em regiões
+da imagem contendo estruturas claras e com alto grau de simetria,
+e é, portanto, utilizada para a detecção dos leucócitos nas imagens
+de microscopia intravital.
+
+
+\subsection{Deconvolução\label{sub:Deconvolu=0000E7=0000E3o}}
+
+Deconvolução\emph{ }é o processo de remoção do borramento introduzido
+durante a formação e aquisição da imagem, utilizando algum conhecimento
+\textit{\emph{a priori}} que se tem sobre tal fenômeno de degradação
+\cite{Bertero1998,Sibarita2005}. O borramento normalmente ocorre
+devido a fatores como o movimento relativo entre o sensor de captura
+e o objeto imageado, o desajuste focal e a presença de deformidades
+nas lentes. Além disso, sabe-se que os processos de armazenamento
+e transmissão da imagem também podem levar à introdução de ruído.
+Mas enquanto o borramento normalmente possui um modelo matemático
+suficientemente preciso para sua descrição, o ruído pode apenas ser
+estimado estatisticamente \cite{Bertero1998}.
+
+O modelo de formação e degradação de uma imagem é matematicamente
+expresso pela equação
+
+\begin{equation}
+g=h\otimes f+\eta,\label{eq:imagem_ruidosa_continua}
+\end{equation}
+na qual a função $f$ representa a imagem latente\emph{ }(sem qualquer
+degradação) do objeto imageado, $\eta$ é o componente de ruído aditivo,
+$h$ é a função de espalhamento de ponto (PSF - \emph{point spread
+function}) do sistema óptico de imageamento e $g$ representa a imagem
+degradada que se obtém como resultado final. O símbolo $\otimes$
+corresponde ao operador de convolução, ou seja, o borramento é o resultado
+de uma convolução entre a PSF e a imagem latente. A deconvolução visa
+reverter tal processo, o que não é uma tarefa trivial pois se trata
+de um problema mal posto \cite{Bertero1998,Gonzalez2006,Sibarita2005}.
+
+Na prática, o objetivo das técnicas de deconvolução é, a partir da
+imagem degradada $g$, tentar encontrar uma boa aproximação para a
+correspondente $f$, assumindo por hipótese que a PSF $h$ é um operador
+linear e invariante à posição \cite{Gonzalez2006}. Em qualquer algoritmo
+desse tipo, a qualidade e precisão da PSF são essenciais para que
+se possa conseguir uma boa restauração da imagem degradada. Estimativas
+incorretas ou fora de escala podem levar ao surgimento de artefatos
+indesejados na imagem de saída do algoritmo, conduzindo a resultados
+pouco satisfatórios \cite{Sibarita2005}.
+
+Muitas vezes, entretanto, o usuário não tem conhecimento da PSF do
+sistema óptico e nem pode obter tal informação após a aquisição das
+imagens. Nesses casos, podem ser empregadas técnicas de deconvolução
+cega, nas quais tanto a imagem latente como a própria PSF são estimadas
+e refinadas iterativamente a partir de uma dada inicialização. Os
+algoritmos de deconvolução cega costumam ter características análogas
+às dos algoritmos não-cegos iterativos e estatísticos, além de normalmente
+produzirem resultados melhores do que aqueles que seriam conseguidos
+usando um modelo puramente teórico de PSF - o qual se aplicaria a
+um sistema ideal, com lentes e calibração perfeitas, que dificilmente
+ocorre na prática \cite{Sibarita2005}.
+
+Neste trabalho foram testadas duas técnicas de deconvolução cega,
+as quais são descritas a seguir. É importante observar que, como o
+escopo do trabalho está na análise quantitativa do efeito da restauração
+dos quadros de vídeo de MI na detecção automática de leucócitos, não
+se teve como prioridade abordar técnicas que compõem o estado da arte
+em termos de restauração de imagens; em vez disso, preferiu-se dar
+enfoque a técnicas que se encontram facilmente disponíveis para uso
+pelo usuário final (que provavelmente não seria um especialista em
+restauração de imagens).
+
+
+\subsection{Algoritmo \emph{deconvblind}\texttt{\label{sub:Algoritmo-deconvblind}}}
+
+O algoritmo \emph{deconvblind} é uma técnica de deconvolução cega
+implementada no software MATLAB$^{\textregistered}$. Ela se baseia
+no algoritmo não-cego de Richardson-Lucy \cite{Richardson1972,Lucy1974}
+- também chamado de método EM (\emph{Expectation-Maximization}) -
+que utiliza uma abordagem Bayesiana para a estimação iterativa da
+imagem latente $f$ pelo critério de máxima verossimilhança. Isto
+é, a partir da regra de Bayes:
+\begin{equation}
+\Pr\left(f\mid g\right)=\frac{\Pr\left(g\mid f\right)\Pr\left(f\right)}{\Pr\left(g\right)},\label{eq:Bayes-rule}
+\end{equation}
+a solução desejada é encontrada com a seguinte maximização:
+\begin{equation}
+ML\left(f\right)=\arg\max_{f}\Pr\left(g\mid f\right),\label{eq:maximum-likelihood}
+\end{equation}
+na qual o termo $\Pr\left(g\mid f\right)$ representa a verossimilhança
+de $g$ em relação a $f$. Assumindo-se a hipótese de que o componente
+de ruído da imagem é estatisticamente regido por uma distribuição
+Poisson, temos
+\begin{equation}
+\Pr\left(g\mid f\right)=\prod_{i}\frac{\left(h\otimes f\right)_{i}^{g_{i}}\exp\left(-\left(h\otimes f\right)_{i}\right)}{g_{i}!},\label{eq:likelihood_Poisson}
+\end{equation}
+
+
+\noindent em que o índice $i$ representa uma coordenada no domínio
+espacial da imagem; isto é, $i=(x,y)$ para algum $x$ e algum $y$.
+
+\noindent Assumindo que a PSF é normalizada para ter soma 1 e utilizando
+o processo iterativo de Picard \cite{Isaacson1966}, a iteração computada
+pelo algoritmo Richardson-Lucy fica expressa pela equação
+
+\begin{equation}
+f^{\left(n+1\right)}=f^{\left(n\right)}\left(\frac{g}{h\otimes f^{\left(n\right)}}\otimes h^{*}\right),\label{eq:iteracao_Richardson-Lucy}
+\end{equation}
+sendo $f^{\left(n\right)}$ a estimação para $f$ computada na $n$-ésima
+iteração, e $h^{*}$ tal que $h^{*}\left(x,y\right)=h\left(-x,-y\right)$
+\cite{Starck2002}.
+
+O algoritmo \emph{deconvblind} se utiliza de fundamentação análoga
+para estimar iterativamente a PSF $h$ juntamente à imagem latente
+$f$. Em particular, a implementação presente no MATLAB$^{\textregistered}$
+também permite a especificação de uma matriz de ponderações $W$ que
+tem por objetivo restringir o efeito da restauração em determinadas
+regiões da imagem - o que pode ser muito útil para se reduzir o surgimento
+de artefatos próximos a bordas, por exemplo. E assim como acontece
+no algoritmo de Richardson-Lucy original, definir o número adequado
+de iterações é de crítica importância, pois um número excessivo de
+iterações pode levar ao surgimento de artefatos na imagem resultante,
+enquanto um número pequeno pode não ser suficiente para produzir estimativas
+satisfatórias.
+
+Mais detalhes sobre essa técnica podem ser encontrados na documentação
+oficial do MATLAB$^{\textregistered}$, em: \url{http://www.mathworks.com/help/images/ref/deconvblind.html}.
+
+
+\subsection{Método de Shan \emph{et al}.\label{sub:M=0000E9todo-de-Shan-et-al.}}
+
+Um dos principais problemas em restauração de imagens é o controle
+do surgimento de artefatos nas imagens restauradas produzidas como
+saída pelos algoritmos de deconvolução \cite{Sibarita2005,Bertero1998,Starck2002}
+- em especial o chamado artefato de \emph{ringing}, que consiste na
+presença de um padrão de ``ondas'' ao redor de bordas e outras regiões
+de alto contraste na imagem. No trabalho de Shan \emph{et al}. \cite{Shan2008},
+os autores examinam esse fenômeno e concluem que o \emph{ringing}
+é causado puramente por erros na modelagem do ruído e na estimação
+da PSF, e não pelo fenômeno de Gibbs \cite{Gottlieb-1997}, por exemplo.
+Mais do que isso, o referido trabalho menciona que as abordagens tradicionalmente
+utilizadas para a modelagem estatística do ruído, como, por exemplo,
+assumir uma distribuição Normal de média zero, são ineficazes em refletir
+sua propriedade de aleatoriedade espacial. Em outras palavras, o erro
+$\eta=g-h\otimes f$ produz um resultado não-aleatório e influenciado
+pelo conteúdo da imagem. Essa discrepância entre o modelo teórico
+e o que ocorre na prática seria a causa do aparecimento do artefato
+de \textit{ringing}.
+
+Dada a referida constatação, os autores propuseram uma técnica de
+deconvolução cega baseada na obtenção da máxima a posteriori (MAP)
+\begin{equation}
+\max_{f,h}\Pr\left(f,h\mid g\right)\propto\Pr\left(g\mid f,h\right)\Pr\left(f\right)\Pr\left(h\right),\label{eq:MAP_Shan-et-al}
+\end{equation}
+em que $\Pr\left(g\mid f,h\right)$ representa a verossimilhança de
+$g$ em relação a $f$ e $h$, e $\Pr\left(f\right)$ e $\Pr\left(h\right)$\textbf{
+}denotam as probabilidades a priori da imagem latente e da PSF, respectivamente.
+
+Uma vez que os pixels $\eta_{i}$ do componente de ruído são tidos
+como espacialmente independentes e identicamente distribuídos, o termo
+de verossimilhança é definido como
+\begin{eqnarray}
+\Pr\left(g\mid f,h\right) & = & \prod_{\partial^{*}\in\Theta}\prod_{i}N\left(\partial^{*}\eta_{i}\,|\,0,\sigma_{\kappa(\partial^{*})}\right)\nonumber \\
+ & = & \prod_{\partial^{*}\in\Theta}\prod_{i}N\left(\partial^{*}g_{i}\,|\,\partial^{*}g_{i}^{c},\sigma_{\kappa(\partial^{*})}\right),\label{eq:likelihood_Shan-et-al}
+\end{eqnarray}
+onde $g_{i}^{c}$ é o pixel com coordenada $i=(x,y)$ em $g=h\otimes f$,
+$\partial^{*}$ denota o operador de derivada parcial de determinada
+ordem, $\kappa\left(\partial^{*}\right)$ é uma função que expressa
+a ordem de $\partial^{*}$, $N$ é a distribuição Normal e $\sigma_{\kappa(\partial^{*})}$
+representa um valor de desvio padrão que varia de acordo com a ordem
+de $\partial^{*}$. O conjunto $\Theta$ contém todos os operadores
+de derivadas parciais utilizados e é definido em \cite{Shan2008}
+como $\Theta=\left\{ \partial^{0},\partial_{x},\partial_{y},\partial_{xx},\partial_{xy},\partial_{yy}\right\} $,
+sendo $\partial^{0}n_{i}=n_{i}$.
+
+Para a priori da PSF, parte-se do princípio de que os coeficientes
+de uma PSF tendem a ser esparsos (com a maior parte dos valores próximos
+a zero) e, assim, assume-se que seus valores são exponencialmente
+distribuídos. Portanto:
+\begin{eqnarray}
+\Pr\left(h\right)=\prod_{i}e^{-\tau h_{i}} & , & h_{j}\geq0,\label{eq:prior_h_Shan-et-al}
+\end{eqnarray}
+sendo $\tau$ um parâmetro de ponderação.
+
+A priori da imagem latente é constituída por dois componentes: uma
+priori global $\Pr_{g}\left(f\right)$ e uma priori local $\Pr_{l}\left(f\right)$,
+que juntas devem agir como um mecanismo regularizador e ao mesmo tempo
+também contribuir para a supressão do \emph{ringing} na imagem restaurada.
+Com base nos trabalhos de Weiss \emph{et al}. e Roth \emph{et al}.
+\cite{Weiss2007,Roth2005}, nos quais é mostrado que os gradientes
+de imagens naturais seguem uma distribuição com cauda pesada que pode
+ser aprendida a partir de um conjunto de amostras, a priori global
+é modelada como
+\begin{equation}
+\Pr_{g}\left(f\right)\propto\prod_{i}e^{\phi\left(\partial f_{i}\right)},\label{eq:global_prior_f_Shan-et-al}
+\end{equation}
+sendo $\phi$ uma função de aproximação para a referida distribuição
+dos gradientes de imagens naturais. Essa função $\phi$ é definida
+pelos autores como
+\begin{equation}
+\phi\left(x\right)=\begin{cases}
+-k|x|, & x\leq l_{i}\\
+-\left(ax\text{\texttwosuperior}+b\right), & x>l_{i}
+\end{cases}.\label{eq:gradient_distribution_aprox}
+\end{equation}
+Por sua vez, a modelagem da priori local é motivada pela ideia de
+se preservar as regiões com pouca variação local de intensidade -
+uma estratégia para evitar o \emph{ringing}. Sendo $\Omega$ o conjunto
+de todos os pixels que constituem centros de regiões como essas, e
+tomando como restrição o fato de que o gradiente da imagem borrada
+deve ser tão próximo quanto possível do gradiente da imagem restaurada
+nessas regiões, temos
+\begin{equation}
+\Pr_{l}\left(f\right)=\prod_{i\in\Omega}N\left(\partial_{x}f_{i}-\partial_{x}g_{i}\,|\,0,\sigma_{1}\right)N\left(\partial_{y}f_{i}-\partial_{y}g_{i}\,|\,0,\sigma_{1}\right),\label{eq:local_prior_f_Shan-et-al}
+\end{equation}
+a qual é uma representação do erro estimado nessa aproximação. Por
+fim, a priori da imagem latente $\Pr\left(f\right)$ é dada pelo produto
+das prioris global e local:
+\begin{equation}
+\Pr\left(f\right)=\Pr_{g}\left(f\right)\Pr_{l}\left(f\right).\label{eq:prior_f_Shan-t-al}
+\end{equation}
+
+
+Para chegar a uma solução prática, os autores da técnica convertem
+o modelo probabilístico da Equação \ref{eq:MAP_Shan-et-al} para o
+problema de minimização do seguinte funcional de energia:
+\begin{eqnarray}
+E\left(f,h\right) & = & -\log\left(\Pr\left(f,h\mid g\right)\right)\nonumber \\
+ & = & -\left(\log\left(\Pr\left(g\mid f,h\right)\right)+\log\left(\Pr\left(f\right)\right)+\log\left(\Pr\left(h\right)\right)\right)\label{eq:energy_minimization_Shan-et-al}
+\end{eqnarray}
+cuja solução é encontrada através de um algoritmo de otimização que
+itera, alternativamente, entre a estimação da PSF $h$ e a aproximação
+da imagem latente $f$. Todos os detalhes por trás desse processo
+de otimização podem ser encontrados no referido trabalho \cite{Shan2008}.
+
+A maior desvantagem dessa técnica está no seu alto tempo de processamento
+em comparação aos algoritmos mais tradicionais de deconvolução (especialmente
+os não-cegos).
+
+
+\section{Metodologia\label{sec:Metodologia}}
+
+As subseções a seguir descrevem os passos tomados para a aquisição
+das imagens, pré-processamento, condução dos experimentos e avaliação
+dos resultados.
+
+
+\subsection{Banco de imagens\label{sub:Banco-de-imagens}}
+
+As imagens de vídeo usadas neste trabalho exibem o recrutamento de
+leucócitos marcados com rodamina 6G nas vênulas pós-capilares da microcirculação
+cerebral de um camundongo. Para a aquisição, foi utilizado um microscópio
+Zeiss Imager M.2 (Thornwood, NY, com filtro de emissão/590 nm e excitação/510-560
+nm), objetiva 20XLD. As imagens possuem 8 bits de profundidade, taxa
+de amostragem de 16 quadros por segundo e resolução espacial de 1,89
+pixels/$\mu$m. A matriz imagem possui 692\texttimes 520 pixels. O
+vídeo obtido possui, no total, 329 quadros. Todos os procedimentos
+laboratoriais foram realizados no Núcleo de Neurociências (NNC) da
+Universidade Federal de Minas Gerais (UFMG) sob coordenação da Profa.
+Dra. Juliana Carvalho Tavares. Esses procedimentos são resumidamente
+ilustrados na Figura \ref{fig:Procedimentos-laboratoriais}.
+
+\begin{figure}
+\begin{centering}
+\includegraphics[scale=0.25]{figures/ProcedimentosLaboratoriais}
+\par\end{centering}
+
+\protect\caption{Resumo dos procedimentos laboratoriais para aquisição das imagens.\label{fig:Procedimentos-laboratoriais}}
+\end{figure}
+
+
+
+\subsection{Pré-processamento\label{sub:Pr=0000E9-processamento}}
+
+As imagens de microscopia foram submetidas a uma etapa de pré-processamento
+previamente à aplicação das técnicas de detecção dos leucócitos. Primeiramente,
+o filtro bilateral proposto em \cite{Tomasi1998} foi usado para redução
+de ruído e melhoria de contraste nas imagens. A seguir, a perda de
+alinhamento espacial da sequência de quadros de vídeo foi minimizada
+utilizando uma técnica de corregistro de imagens \cite{Silva2012}.
+É importante observar que o método de co-registro aplicado às imagens
+não é capaz de corrigir degradações severas geradas por movimentos
+intensos e complexos (combinação de movimentos verticais e horizontais)
+do animal em observação. 
+
+
+\subsection{Descrição dos experimentos\label{sub:Descri=0000E7=0000E3o-dos-experimentos}}
+
+Os experimentos de restauração das imagens de microscopia realizados
+neste trabalho foram analisados de maneira quantitativa usando as
+técnicas de detecção de leucócitos descritas na Seção \ref{sub:Detec=0000E7=0000E3o-autom=0000E1tica-de-leuc=0000F3citos}
+para três situações, usando: (i) imagens de boa qualidade, (ii) imagens
+degradadas por artefatos de movimento e (iii) imagens restauradas
+pelas técnicas de deconvolução cega descritas na Seção \ref{sub:Deconvolu=0000E7=0000E3o}.
+A precisão da detecção automática foi avaliada por comparação com
+a detecção dos leucócitos realizada visualmente nas mesmas imagens
+por um especialista.
+
+Os experimentos foram realizados seguindo os seguintes passos: (a)
+primeiro, 15 quadros de vídeo de boa qualidade visual (pouca ou nenhuma
+degradação de movimento) foram previamente selecionados. Seja esse
+conjunto de imagens denominado $\Omega$. (b) Os centroides dos leucócitos
+nas imagens em $\Omega$ foram manualmente marcados, originando um
+novo conjunto, $\Omega_{0}$, que constitui o padrão ouro do experimento.
+(c) Cada imagem de $\Omega$ foi degradada artificialmente a partir
+da convolução com uma PSF de borramento linear uniforme de comprimento
+11 (simulando um movimento fraco), produzindo o conjunto de imagens
+degradadas $\Omega'_{1}$. Analogamente, produziu-se o conjunto de
+imagens degradadas $\Omega'_{2}$ usando uma PSF de comprimento 21
+(movimento forte). (d) Os dois algoritmos de detecção automática de
+leucócitos apresentados na Seção \ref{sub:Detec=0000E7=0000E3o-autom=0000E1tica-de-leuc=0000F3citos},
+aqui referidos pelas siglas CP (casamento de padrões) e SFL (simetria
+de fase local), foram aplicados às imagens de $\Omega'_{1}$ e $\Omega'_{2}$,
+resultando nos conjuntos $CP\left(\Omega'_{i}\right)$ e $SFL\left(\Omega'_{i}\right)$,
+para $i=1,2$. (e) Os quadros de $\Omega'_{1}$ e $\Omega'_{2}$ foram
+então restaurados usando, separadamente, as duas técnicas de deconvolução
+cega descritas na Seção \ref{sub:Deconvolu=0000E7=0000E3o}, aqui
+referidas pelas siglas DB (\emph{deconvblind}) e SH (Shan \emph{et
+al.}). Esse passo resultou nos conjuntos $DB\left(\Omega'_{i}\right)$
+e $SH\left(\Omega'_{i}\right)$, para $i=1,2$. (f) Os dois algoritmos
+de detecção de leucócitos foram aplicados novamente, desta vez às
+imagens restauradas, produzindo os conjuntos de imagens $CP\left(DB\left(\Omega'_{i}\right)\right)$,
+$CP\left(SH\left(\Omega'_{i}\right)\right)$, $SFL\left(DB\left(\Omega'_{i}\right)\right)$
+e $SFL\left(SH\left(\Omega'_{i}\right)\right)$, para $i=1,2$. (g)
+Por fim, foram avaliadas as correspondências entre os centroides manualmente
+marcados no padrão ouro $\Omega_{0}$ e aqueles marcados automaticamente
+nas imagens resultantes dos passos (d) e (f), contando a quantidade
+de verdadeiros positivos (VP), falsos positivos (FP) e falsos negativos
+(FN) em cada conjunto. Com a análise comparativa dos diferentes resultados
+obtidos, foi possível estimar o quão mais eficazes as técnicas de
+detecção se tornam quando são aplicadas em imagens restauradas (em
+comparação ao que se consegue com imagens degradadas). O diagrama
+da Figura \ref{fig:Sequ=0000EAncia-de-passos-experimentos} ilustra
+toda essa sequência de passos.
+
+\begin{figure}
+\begin{centering}
+\includegraphics[scale=0.5]{figures/Diagrama_Experimentos}
+\par\end{centering}
+
+\protect\caption{Sequência de passos realizados nos experimentos para validação das
+técnicas de deconvolução e de detecção de leucócitos.\label{fig:Sequ=0000EAncia-de-passos-experimentos}}
+\end{figure}
+
+
+Os algoritmos de deconvolução cega e de detecção foram utilizados
+com os argumentos de entrada mostrados nas Tabelas \ref{tab:Argumentos-de-entrada-restaura=0000E7=0000E3o}
+e \ref{tab:Argumentos-de-entrada-detec=0000E7=0000E3o}. A escolha
+de 10 iterações para o algoritmo \emph{deconvblind} deve-se ao fato
+de que tal valor trouxe os melhores resultados visuais em termos de
+equilíbrio entre restauração e ausência de artefatos nas imagens de
+MI. No método de Shan \emph{et al.}, para o qual utilizou-se uma implementação
+fornecida pelos seus próprios autores (disponível em \url{http://www.cse.cuhk.edu.hk/leojia/programs/deblurring/deblurring.htm}),
+foram usados os valores que o programa estabelece por padrão, devido
+à ausência de uma discussão sobre como ajustá-los em relação à imagem
+de entrada. O mesmo vale para a técnica de simetria de fase local.
+Para a técnica de casamento de padrões, assumiu-se um valor de limiarização
+de 0,8 (em termos de coeficiente de correlação) para que fossem selecionados
+apenas os pontos da imagem nos quais as chances de correta identificação
+de um leucócito fossem consideravelmente altas.
+
+\begin{table}
+\protect\caption{Argumentos de entrada usados nos algoritmos de deconvolução cega.\label{tab:Argumentos-de-entrada-restaura=0000E7=0000E3o}}
+
+
+\centering{}%
+\begin{tabular}{cc|cc}
+\hline 
+\multicolumn{2}{c|}{\textbf{Deconvblind}} & \multicolumn{2}{c}{\textbf{Shan }\textbf{\emph{et al}}\textbf{.}}\tabularnewline
+\hline 
+Parâmetro & Valor & Parâmetro & Valor\tabularnewline
+\hline 
+$itera\cedilla{c}\tilde{o}es$ & 10 & $noiseStrength$ & 0,01\tabularnewline
+ &  & $deblurStrength$ & 0,02\tabularnewline
+ &  & $gamma$ & 1\tabularnewline
+ &  & $weights$ & 1\tabularnewline
+\hline 
+\end{tabular}
+\end{table}
+
+
+\begin{table}
+\protect\caption{Argumentos de entrada usados nos algoritmos de detecção de leucócitos.\label{tab:Argumentos-de-entrada-detec=0000E7=0000E3o}}
+
+
+\centering{}%
+\begin{tabular}{cc|cc}
+\hline 
+\multicolumn{2}{c|}{\textbf{Casamento de padrões}} & \multicolumn{2}{c}{\textbf{Simetria de fase local}}\tabularnewline
+\hline 
+Parâmetro & Valor & Parâmetro & Valor\tabularnewline
+\hline 
+$threshold$ & 0,8 & $noiseSigma$ & 2\tabularnewline
+$leukocyteSNR$ & 10 &  & \tabularnewline
+\hline 
+\end{tabular}
+\end{table}
+
+
+
+\subsection{Método de avaliação\label{sub:M=0000E9todo-de-avalia=0000E7=0000E3o}}
+
+A avaliação dos resultados foi feita por meio da análise de precisão
+\emph{versus} revocação do sistema de detecção. Essa análise envolve
+plotar, num espaço bidimensional, as seguintes grandezas:
+\begin{equation}
+precis\tilde{a}o=VP/\left(VP+FP\right)\label{eq:ROC_Precision}
+\end{equation}
+\begin{equation}
+revoca\cedilla{c}\tilde{a}o=VP/\left(VP+FN\right)\label{eq:ROC_Recall}
+\end{equation}
+em que $VP$ (número de verdadeiros positivos) representa o número
+de leucócitos corretamente detectados pela técnica, $FP$ (número
+de falsos positivos) representa o número de leucócitos detectados
+pela técnica mas que não correspondem a leucócitos reais, e $FN$
+(número de falsos negativos) representa o número de leucócitos reais
+que a técnica não conseguiu detectar. Em outras palavras, a precisão
+do sistema expressa a taxa de acertos efetivos dentre aquilo que foi
+detectado, enquanto a revocação é a taxa do que foi corretamente detectado
+dentre as reais instâncias positivas. Quanto mais próximas ambas as
+grandezas estiverem do valor máximo 1, melhor é a eficácia do sistema
+de detecção \cite{Fawcett2006}.
+
+Cada técnica de detecção teve seu desempenho medido em cada um dos
+conjuntos de imagens mencionados na Seção \ref{sub:Descri=0000E7=0000E3o-dos-experimentos},
+isto é, em imagens degradadas artificialmente por movimento fraco
+e forte e nas imagens restauradas por cada técnica de deconvolução
+em cada um desses casos. O procedimento foi realizado em todos os
+15 quadros de vídeo de cada conjunto de imagens e, ao final, foram
+calculados os valores médios de precisão e revocação para cada conjunto.
+As comparações com o padrão ouro foram realizadas pela verificação
+da correspondência entre as posições dos centroides nas imagens, tolerando-se
+uma diferença de até 9 pixels nas direções horizontal e vertical.
+A razão para o limite superior de 9 pixels é que essa é a medida em
+pixels do diâmetro do maior leucócito encontrado no vídeo testado.
+Uma vez que as imagens de vídeo já passaram por um processo de corregistro,
+não é necessário tolerar diferenças maiores do que essa.
+
+
+\section{Resultados e discussão\label{sec:Resultados-e-discuss=0000E3o}}
+
+As Tabelas \ref{tab:Precis=0000E3o-vs-Recupera=0000E7=0000E3o-TMatching}
+e \ref{tab:Precis=0000E3o-vs-Recupera=0000E7=0000E3o-IsoPCSymm} apresentam
+os valores médios de precisão e revocação obtidos para as técnicas
+de detecção por casamento de padrões e por simetria de fase local,
+respectivamente, em cada um dos conjuntos de imagens previamente mencionados.
+As tabelas também apresentam a distância $D$ de cada ponto $(precis\tilde{a}o,\: revoca\cedilla{c}\tilde{a}o)$
+em relação ao ponto (1,1) que indica a máxima eficácia do sistema
+de detecção. Nesse caso, quanto menor a distância $D$ medida, melhor
+é a eficácia do sistema. As Figuras \ref{fig:Precis=0000E3o-vs-Recupera=0000E7=0000E3o-TMatching}
+e \ref{fig:Precis=0000E3o-vs-Recupera=0000E7=0000E3o-IsoPCSymm} exibem
+os gráficos de precisão \emph{versus} revocação das referidas técnicas.
+O valor de $D$ é dado pela distância euclidiana
+\begin{equation}
+D=\sqrt{(1-precis\tilde{a}o)^{2}+(1-revoca\cedilla{c}\tilde{a}o)^{2}}.\label{eq:ROC_dist=0000E2ncia}
+\end{equation}
+
+
+\begin{table}[h]
+\protect\caption{Medidas de precisão e revocação para a técnica de casamento de padrões,
+bem como a distância de cada ponto (\emph{precisão}, \emph{revocação})
+ao ponto de máxima eficácia (1,1).\label{tab:Precis=0000E3o-vs-Recupera=0000E7=0000E3o-TMatching}}
+
+
+\centering{}%
+\begin{tabular}{cccc}
+\hline 
+\textbf{Conjunto de imagens} & \textbf{Precisão} & \textbf{Revocação} & \textbf{\emph{D}}\tabularnewline
+\hline 
+$\Omega$ (sem movimento) & 0,853 & 0,685 & 0,348\tabularnewline
+$\Omega'_{1}$ (movimento fraco) & 0,832 & 0,476 & 0,551\tabularnewline
+$\Omega'_{2}$ (movimento forte) & 0,461 & 0,056 & 1,087\tabularnewline
+Deconvblind ($\Omega'_{1}$ ) & 0,935 & 0,524 & 0,481\tabularnewline
+Deconvblind ($\Omega'_{2}$ ) & 0,823 & 0,130 & 0,887\tabularnewline
+Shan \emph{et al}. ($\Omega'_{1}$ ) & 0,835 & 0,631 & 0,404\tabularnewline
+Shan \emph{et al}. ($\Omega'_{2}$ ) & 0,885 & 0,493 & 0,520\tabularnewline
+\hline 
+\end{tabular}
+\end{table}
+
+
+\begin{table}[h]
+\protect\caption{Medidas de precisão e revocação para a técnica de simetria de fase
+local, bem como a distância de cada ponto (\emph{precisão}, \emph{revocação})
+ao ponto de máxima eficácia (1,1).\label{tab:Precis=0000E3o-vs-Recupera=0000E7=0000E3o-IsoPCSymm}}
+
+
+\centering{}%
+\begin{tabular}{cccc}
+\hline 
+\textbf{Conjunto de imagens} & \textbf{Precisão} & \textbf{Revocação} & \textbf{\emph{D}}\tabularnewline
+\hline 
+$\Omega$ (sem movimento) & 0,828 & 0,780 & 0,279\tabularnewline
+$\Omega'_{1}$ (movimento fraco) & 0,782 & 0,768 & 0,318\tabularnewline
+$\Omega'_{2}$ (movimento forte) & 0,698 & 0,637 & 0,472\tabularnewline
+Deconvblind ($\Omega'_{1}$ ) & 0,823 & 0,755 & 0,302\tabularnewline
+Deconvblind ($\Omega'_{2}$ ) & 0,905 & 0,676 & 0,338\tabularnewline
+Shan \emph{et al}. ($\Omega'_{1}$ ) & 0,775 & 0,822 & 0,287\tabularnewline
+Shan \emph{et al}. ($\Omega'_{2}$ ) & 0,817 & 0,743 & 0,315\tabularnewline
+\hline 
+\end{tabular}
+\end{table}
+
+
+Observando os valores de $D$ mostrados nas Tabelas \ref{tab:Precis=0000E3o-vs-Recupera=0000E7=0000E3o-TMatching}
+e \ref{tab:Precis=0000E3o-vs-Recupera=0000E7=0000E3o-IsoPCSymm} e
+no gráfico comparativo da Figura \ref{fig:Distancias-IsoPCSymm-vs-TMatching},
+é possível verificar o quanto o borramento de movimento prejudica
+o desempenho de ambas as técnicas de detecção, dado que deforma os
+leucócitos e consequentemente reduz o número de verdadeiros positivos.
+Entretanto, verifica-se também que a restauração dos quadros de vídeo
+consegue amenizar o problema em todos os casos. Esses resultados são
+muito mais expressivos na técnica de casamento de padrões, mas também
+podem ser observados na técnica de simetria de fase local.
+
+Analisando a redução que cada técnica de restauração proporciona ao
+valor de $D$, em relação aos valores nas imagens degradadas por movimento
+fraco e forte, pode-se constatar que o método de Shan \emph{et al}.
+apresenta, em geral, melhores resultados quando comparados com o algoritmo
+\emph{deconvblind}, considerando que a redução em $D$ é maior em
+todos os casos para tal técnica. Em outras palavras, o método de Shan
+\emph{et al}. consegue estimar melhor a PSF que degrada a imagem e
+controlar o surgimento de artefatos, consequentemente realizando uma
+melhor restauração, devolvendo o formato original dos leucócitos de
+maneira mais precisa e, assim, possibilitando que a técnica de detecção
+seja mais eficaz.
+
+\begin{figure}
+\begin{centering}
+\includegraphics[scale=0.6]{figures/precisao_revocacao_CP}
+\par\end{centering}
+
+\protect\caption{Gráfico de precisão \emph{versus} revocação para a técnica de casamento
+de padrões em cada conjunto de imagens.\label{fig:Precis=0000E3o-vs-Recupera=0000E7=0000E3o-TMatching}}
+\end{figure}
+
+
+\begin{figure}
+\begin{centering}
+\includegraphics[scale=0.6]{figures/precisao_revocacao_SFL}
+\par\end{centering}
+
+\protect\caption{Gráfico de precisão \emph{versus} revocação para a técnica de simetria
+de fase local em cada conjunto de imagens.\label{fig:Precis=0000E3o-vs-Recupera=0000E7=0000E3o-IsoPCSymm}}
+\end{figure}
+
+
+\begin{figure}
+\begin{centering}
+\includegraphics[scale=0.6]{figures/metrica_distancia}
+\par\end{centering}
+
+\protect\caption{Distâncias \emph{D} dos pontos (\emph{precisão}, \emph{revocação})
+ao ponto de máxima eficácia (1,1) para cada técnica de detecção e
+em cada conjunto de imagens.\label{fig:Distancias-IsoPCSymm-vs-TMatching}}
+\end{figure}
+
+
+Comparando-se os desempenhos médios das duas técnicas de detecção,
+é possível observar que o método baseado em simetria de fase local
+é mais robusto e portanto apresenta, em geral, melhores resultados
+do que a técnica de casamento de padrões. Esta última tem seu desempenho
+mais negativamente afetado em todas as situações, especialmente quando
+há movimento forte, devido à sua maior sensibilidade a erros e também
+ao fato de que as imagens de vídeo de MI utilizadas possuem, em geral,
+pouco contraste. Também convém notar que nenhum método de restauração
+foi efetivo o suficiente para que alguma técnica de detecção pudesse
+igualar, nas imagens restauradas, o mesmo desempenho médio que havia
+tido nas imagens sem degradação. Tal fato acontece apenas em alguns
+poucos quadros isolados, e mais devido à eliminação de falsos positivos
+presentes no caso sem degradação do que pela inclusão de acertos efetivos.
+
+Observa-se ainda que, pelo fato de a detecção por simetria de fase
+local ser mais robusta, não existe uma grande diferença entre os desempenhos
+obtidos com as imagens restauradas pelo algoritmo \emph{deconvblind}
+e aquelas restauradas pelo método de Shan \emph{et al.} quando se
+faz a detecção dos leucócitos usando essa técnica. Isso significa
+que o uso de métodos de detecção automática mais robustos (preferencialmente
+não sensíveis a variações nos níveis de iluminação e contraste da
+imagem) reduzem a necessidade de uma técnica de restauração muito
+sofisticada e custosa computacionalmente, como é o caso do método
+de Shan \emph{et al}..
+
+Como os movimentos respiratórios e cardíacos do animal em observação
+são inevitáveis no contexto da MI, e como nem sempre é viável descartar
+os quadros de vídeo degradados, podemos então concluir que o uso de
+técnicas de deconvolução cega (mesmo sendo estas técnicas clássicas
+e bastante conhecidas) para restauração dos quadros degradados tem
+efetiva utilidade como forma de pré-processamento dos vídeos de MI
+antes da aplicação de uma técnica de detecção automática de leucócitos,
+especialmente quando se utiliza uma técnica de detecção mais sensível
+a erros, como é o caso do casamento de padrões. 
+
+A Figura \ref{fig:Imagens-restauradas} exibe alguns resultados produzidos
+pelas duas técnicas de deconvolução cega, obtidos a partir da restauração
+de um mesmo quadro de vídeo degradado.
+
+\begin{figure}
+\begin{centering}
+\begin{tabular}{ccc}
+ & Movimento fraco & Movimento forte\tabularnewline
+Original & \includegraphics[scale=0.2]{figures/01_psf11} & \includegraphics[scale=0.2]{figures/01_psf21}\tabularnewline
+Deconvblind & \includegraphics[scale=0.2]{figures/01_deconvblind_11} & \includegraphics[scale=0.2]{figures/01_deconvblind_21}\tabularnewline
+Shan \emph{et al}. & \includegraphics[scale=0.27]{figures/01_shan_11} & \includegraphics[scale=0.27]{figures/01_shan_21}\tabularnewline
+\end{tabular}
+\par\end{centering}
+
+\protect\caption{Resultados produzidos pelas duas técnicas de deconvolução cega a partir
+de um mesmo quadro de vídeo degradado por movimento fraco e forte.\label{fig:Imagens-restauradas}}
+\end{figure}
+
+
+
+\section{Conclusões\label{sec:Conclus=0000F5es}}
+
+Este trabalho apresentou um estudo do efeito da restauração de imagens
+de vídeo de MI degradas por artefatos de movimento, com aplicação
+na detecção automática de leucócitos. Para isso, foram utilizados
+dois métodos de deconvolução cega para corrigir o borramento e artefatos
+de movimento nas imagens de vídeo. Os métodos foram avaliados quantitativamente
+tomando-se como base o desempenho de duas técnicas de detecção automática
+de leucócitos que foram aplicadas às imagens originais e a imagens
+degradadas artificialmente e restauradas. De acordo com os resultados
+obtidos, a restauração dos quadros de vídeo tem, de fato, um grande
+potencial para melhorar a eficácia da detecção, independentemente
+da técnica automática de detecção de leucócitos utilizada. Também
+foi possível concluir que a restauração das imagens nem sempre possibilita
+obter o mesmo desempenho registrado para as imagens sem degradação
+alguma. O método de restauração deve ser escolhido e utilizado cautelosamente
+para que este não introduza artefatos nas imagens e, dessa forma,
+acabe prejudicando ainda mais a detecção dos leucócitos. Nesse sentido,
+o método de restauração de Shan \emph{et al}., com sua maior capacidade
+de supressão de artefatos, produziu os melhores resultados nos experimentos
+realizados.
+
+Assim, no contexto da MI, o uso de métodos de deconvolução cega para
+restauração dos quadros de vídeo mostra-se útil como etapa de pré-processamento
+antes do processamento das imagens de MI para a detecção automática
+de leucócitos, visto que os movimentos respiratórios e cardíacos do
+animal em observação são inevitáveis e que nem sempre é viável descartar
+os quadros de vídeo degradados. Isso é válido especialmente quando
+o método de detecção automática de leucócitos a ser utilizado é mais
+sensível a erros. No entanto, tal pré-processamento depende primeiramente
+de uma seleção automática dos quadros que precisam ser restaurados.
+Um método para a seleção automática dos quadros degradados por artefatos
+de movimento foi desenvolvido pelo nosso grupo de pesquisa \cite{Ferrari2015}
+e será usado como uma etapa do \emph{pipeline} de pré-processamento
+das imagens.
+
+
+\section{Agradecimentos}
+
+Os autores agradecem à Fundação de Amparo à Pesquisa do Estado de
+São Paulo (FAPESP) - processos números 2012/17772-3 e 2013/26171-6
+- e ao Conselho Nacional de Desenvolvimento Científico e Tecnológico
+(CNPq) - processo número 481923/2010-1 - pelo apoio financeiro conferido
+durante o desenvolvimento deste trabalho e de outros que o precederam.
+
+
+\section{Referências}
+
+\bibliographystyle{plain}
+\begin{btSect}{RITAmanuscript}
+\btPrintCited
+\end{btSect}
+
+\end{document}

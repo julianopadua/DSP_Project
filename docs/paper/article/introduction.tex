@@ -4,7 +4,11 @@ automática de batimentos depende, portanto, de uma representação capaz de
 preservar amplitudes locais, variações de intervalo RR e conteúdo espectral em
 janelas curtas. A MIT-BIH Arrhythmia Database permanece relevante nesse cenário
 por combinar sinais reais, anotações públicas e acesso padronizado por WFDB
-\citep{moody2001mitdb,goldberger2000physionet,wfdb2022software}.
+\citep{moody2001mitdb,goldberger2000physionet,wfdb2022software}. Estudos
+clássicos com a base usam morfologia do ECG e intervalos RR como descritores
+interpretáveis de batimentos, o que sustenta a representação basal adotada antes
+da adição de descritores espectrais e Gabor \citep{dechazal2004heartbeat,
+doquire2011featureselection}.
 
 O interesse em detecção one-class decorre de uma assimetria comum em dados
 biomédicos. Batimentos normais aparecem em maior quantidade e com menor
@@ -12,7 +16,16 @@ heterogeneidade, enquanto anomalias reúnem padrões fisiológicos e morfológic
 distintos. Um detector treinado apenas na distribuição normal evita assumir que
 o conjunto de anomalias observado durante o desenvolvimento representa todos os
 casos possíveis. A formulação adotada segue esse princípio e reserva os rótulos
-anômalos apenas para a avaliação final \citep{sklearnNovelty}.
+anômalos apenas para a avaliação final
+\citep{pimentel2014novelty,sklearnNovelty}.
+
+O monitoramento contínuo de ECG acrescenta uma restrição prática à comparação.
+Um detector com melhor ranqueamento de anomalias pode ser menos atraente se
+depender de muitas features, treinamento custoso ou inferência lenta por
+batimento. A literatura de computação na borda motiva processamento próximo da
+fonte dos dados em aplicações sensíveis a tempo de resposta, largura de banda e
+energia, mas a análise aqui permanece restrita a custo computacional local
+\citep{shi2016edge}.
 
 O problema não é apresentado como diagnóstico clínico. O protocolo avalia uma
 tarefa binária e controlada, na qual batimentos \texttt{N} representam a
@@ -27,10 +40,12 @@ experimento por etapas de denoising, segmentação e classificação multi-class
 experimental. O objetivo difere porque não há balanceamento supervisionado de
 classes anômalas nem uso de anomalias no treino.
 
-A hipótese testada afirma que etapas de processamento e features
+A primeira hipótese testada afirma que etapas de processamento e features
 tempo-frequência podem aumentar a separabilidade entre batimentos normais e
-anômalos. A avaliação por ablação separa quatro representações cumulativas. O
-sinal bruto fornece morfologia e RR; o sinal filtrado testa o efeito do
+anômalos. A segunda hipótese afirma que a comparação permite identificar um par
+representação-detector com melhor compromisso entre PR-AUC e custo
+computacional. A avaliação por ablação separa quatro representações cumulativas.
+O sinal bruto fornece morfologia e RR; o sinal filtrado testa o efeito do
 denoising; os descritores espectrais acrescentam energia por bandas e STFT; as
 respostas Gabor medem energia localizada em regiões aproximadas P, QRS e T. A
 PR-AUC ocupa o papel de métrica principal, pois a interpretação de ROC-AUC pode
@@ -38,7 +53,8 @@ ficar otimista quando classes são desbalanceadas e o custo de falsos positivos
 aparece na precision \citep{davis2006prroc}.
 
 O pipeline em \texttt{src} organiza a separação inter-paciente dos registros, a
-comparação de três detectores one-class e a produção de figuras e tabelas que
-tornam a hipótese verificável. Os resultados preliminares indicam uma relação
-dependente do detector, o que exige uma discussão mais cuidadosa do que a
-simples afirmação de que filtragem ou Gabor melhoram o desempenho.
+comparação de três detectores one-class, o registro de tempos de ajuste e escore
+e a produção de figuras e tabelas que tornam as hipóteses verificáveis. Os
+resultados preliminares indicam uma relação dependente do detector, o que exige
+uma discussão mais cuidadosa do que a simples afirmação de que filtragem ou
+Gabor melhoram o desempenho.

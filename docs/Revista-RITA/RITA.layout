@@ -1,0 +1,5 @@
+#% Do not delete the line below; configure depends on this      
+#  \DeclareLaTeXClass[RITA]{RITA Revista de Informática Teórica e Aplicada}
+
+# Read the definitions from article.layout
+Input article.layout

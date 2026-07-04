@@ -14,13 +14,34 @@ PHYSIO_WINDOWS_S = {
     "t": (0.12, 0.36),
 }
 
-GABOR_BANK_HZ = (5.0, 7.0, 10.0, 15.0, 20.0, 30.0)
+GABOR_WAVE_FREQUENCIES_HZ = {
+    "p": (7.0, 15.0, 25.0),
+    "qrs": (10.0, 15.0, 20.0),
+    "t": (3.0, 5.0, 7.0),
+}
+GABOR_BANK_HZ = tuple(
+    f0 for frequencies in GABOR_WAVE_FREQUENCIES_HZ.values() for f0 in frequencies
+)
+GABOR_N_CYCLES = 3.0
 
 
-def _safe_segment(beat: np.ndarray, fs: float, start_s: float, end_s: float) -> np.ndarray:
-    center = beat.size // 2
-    lo = max(0, center + int(round(start_s * fs)))
-    hi = min(beat.size, center + int(round(end_s * fs)))
+def _anchor_index(beat: np.ndarray, r_index: int | None) -> int:
+    if r_index is None:
+        return beat.size // 2
+    return int(np.clip(r_index, 0, beat.size - 1))
+
+
+def _safe_segment(
+    beat: np.ndarray,
+    fs: float,
+    start_s: float,
+    end_s: float,
+    *,
+    r_index: int | None = None,
+) -> np.ndarray:
+    anchor = _anchor_index(beat, r_index)
+    lo = max(0, anchor + int(round(start_s * fs)))
+    hi = min(beat.size, anchor + int(round(end_s * fs)))
     if hi <= lo:
         return np.asarray([], dtype=float)
     return beat[lo:hi]
@@ -44,15 +65,20 @@ def _safe_stats(prefix: str, values: np.ndarray, fs: float) -> dict[str, float]:
     }
 
 
-def morphology_features(beat: np.ndarray, fs: float) -> dict[str, float]:
+def morphology_features(
+    beat: np.ndarray,
+    fs: float,
+    *,
+    r_index: int | None = None,
+) -> dict[str, float]:
     """Features simples no dominio do tempo."""
     x = np.asarray(beat, dtype=float)
     if x.size == 0:
         raise ValueError("Janela de batimento vazia.")
-    center = x.size // 2
+    anchor = _anchor_index(x, r_index)
     diff = np.diff(x)
     features = {
-        "r_amp": float(x[center]),
+        "r_amp": float(x[anchor]),
         "beat_max": float(np.max(x)),
         "beat_min": float(np.min(x)),
         "beat_peak_to_peak": float(np.ptp(x)),
@@ -66,7 +92,7 @@ def morphology_features(beat: np.ndarray, fs: float) -> dict[str, float]:
         "max_abs_slope": float(np.max(np.abs(diff)) * fs) if diff.size else 0.0,
     }
     for name, (start_s, end_s) in PHYSIO_WINDOWS_S.items():
-        segment = _safe_segment(x, fs, start_s, end_s)
+        segment = _safe_segment(x, fs, start_s, end_s, r_index=anchor)
         features.update(_safe_stats(f"{name}_window", segment, fs))
     return features
 
@@ -139,10 +165,12 @@ def _window_response_stats(
     fs: float,
     start_s: float,
     end_s: float,
+    *,
+    r_index: int | None = None,
 ) -> dict[str, float]:
-    center = values.size // 2
-    lo = max(0, center + int(round(start_s * fs)))
-    hi = min(values.size, center + int(round(end_s * fs)))
+    anchor = _anchor_index(values, r_index)
+    lo = max(0, anchor + int(round(start_s * fs)))
+    hi = min(values.size, anchor + int(round(end_s * fs)))
     if hi <= lo:
         return {"energy": 0.0, "max": 0.0, "mean": 0.0, "std": 0.0, "peak_offset_ms": 0.0}
     segment = np.asarray(values[lo:hi], dtype=float)
@@ -152,7 +180,7 @@ def _window_response_stats(
         "max": float(np.max(np.abs(segment))),
         "mean": float(np.mean(np.abs(segment))),
         "std": float(np.std(segment)),
-        "peak_offset_ms": float((local_max_idx - center) / fs * 1000.0),
+        "peak_offset_ms": float((local_max_idx - anchor) / fs * 1000.0),
     }
 
 
@@ -160,21 +188,25 @@ def gabor_features(
     beat: np.ndarray,
     fs: float,
     *,
-    bank_hz: tuple[float, ...] = GABOR_BANK_HZ,
-    n_cycles: float = 3.0,
+    wave_frequencies_hz: dict[str, tuple[float, ...]] | None = None,
+    n_cycles: float = GABOR_N_CYCLES,
+    r_index: int | None = None,
 ) -> dict[str, float]:
     """Features baseadas em respostas Gabor nas janelas P, QRS e T."""
     x = np.asarray(beat, dtype=float)
+    anchor = _anchor_index(x, r_index)
     features: dict[str, float] = {}
     window_energy_totals = {name: 0.0 for name in PHYSIO_WINDOWS_S}
-    for f0 in bank_hz:
-        response = np.sqrt(gabor_energy(x, f0, fs, n_cycles=n_cycles))
-        f_slug = str(f0).replace(".", "p")
-        for window_name, (start_s, end_s) in PHYSIO_WINDOWS_S.items():
-            stats = _window_response_stats(response, fs, start_s, end_s)
+    configs = wave_frequencies_hz or GABOR_WAVE_FREQUENCIES_HZ
+    for window_name, frequencies in configs.items():
+        start_s, end_s = PHYSIO_WINDOWS_S[window_name]
+        for f0 in frequencies:
+            response = np.sqrt(gabor_energy(x, f0, fs, n_cycles=n_cycles))
+            f_slug = str(f0).replace(".", "p")
+            stats = _window_response_stats(response, fs, start_s, end_s, r_index=anchor)
             window_energy_totals[window_name] += stats["energy"]
             for stat_name, value in stats.items():
-                features[f"gabor_{f_slug}hz_{window_name}_{stat_name}"] = value
+                features[f"gabor_{window_name}_{f_slug}hz_{stat_name}"] = value
     qrs_total = max(window_energy_totals["qrs"], 1e-20)
     features["gabor_p_to_qrs_energy_ratio"] = float(window_energy_totals["p"] / qrs_total)
     features["gabor_t_to_qrs_energy_ratio"] = float(window_energy_totals["t"] / qrs_total)
@@ -189,15 +221,16 @@ def extract_feature_groups(
     *,
     rr_prev_s: float | None = None,
     rr_next_s: float | None = None,
+    r_index: int | None = None,
 ) -> dict[str, float]:
     """Extrai grupos de features na ordem definida pela ablação."""
     features: dict[str, float] = {}
     if "morphology" in feature_groups:
-        features.update(morphology_features(beat, fs))
+        features.update(morphology_features(beat, fs, r_index=r_index))
     if "rr" in feature_groups:
         features.update(rr_features(rr_prev_s, rr_next_s))
     if "spectral" in feature_groups:
         features.update(spectral_features(beat, fs))
     if "gabor" in feature_groups:
-        features.update(gabor_features(beat, fs))
+        features.update(gabor_features(beat, fs, r_index=r_index))
     return features

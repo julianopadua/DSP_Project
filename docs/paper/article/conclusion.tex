@@ -6,8 +6,14 @@ bruta, Isolation Forest respondeu melhor aos descritores espectrais, e LOF teve
 seu melhor resultado com features Gabor.
 
 Esses resultados preservam a hipótese como questão experimental, não como
-conclusão fechada. A próxima etapa deve concentrar-se em análise de limiar por
-FPR alvo, seleção ou compressão de features Gabor, comparação com baselines
-supervisionados apenas como referência externa, e inspeção de exemplos de erro.
-O enquadramento deve permanecer como benchmark de DSP e detecção one-class, sem
-promessa de diagnóstico clínico.
+conclusão fechada. A próxima etapa deve acrescentar a leitura de custo
+computacional já registrada pelo pipeline, com tempo de ajuste, tempo de escore
+e tempo médio por batimento. Essa análise permite comparar não apenas o melhor
+PR-AUC, mas o melhor compromisso entre detecção e custo de inferência,
+especialmente no estágio A3, onde a representação é mais completa.
+
+A continuidade também deve concentrar-se em análise de limiar por FPR alvo,
+seleção ou compressão de features Gabor, comparação com baselines supervisionados
+apenas como referência externa, e inspeção de exemplos de erro. O enquadramento
+deve permanecer como benchmark de DSP e detecção one-class, sem promessa de
+diagnóstico clínico ou implantação embarcada sem validação específica.

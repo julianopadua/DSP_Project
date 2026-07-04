@@ -7,6 +7,7 @@ import json
 import logging
 import sys
 from pathlib import Path
+from time import perf_counter
 
 import numpy as np
 import pandas as pd
@@ -15,9 +16,9 @@ from src.config import PAPER_PROCESSED_DIR, ensure_data_dirs
 from src.paper.build_dataset import stage_filename
 from src.paper.constants import ABLATION_STAGES, DETECTOR_NAMES
 from src.paper.experiments import (
-    evaluate_detector,
     fit_detector_on_normals,
     score_detector,
+    summarize_scored_predictions,
 )
 
 logger = logging.getLogger(__name__)
@@ -101,8 +102,13 @@ def run_ablation(
 
         for detector_name in detector_names:
             logger.info("Treinando %s em %s", detector_name, stage.key)
+            fit_start = perf_counter()
             detector, cols, fill_values = fit_detector_on_normals(train_for_fit, detector_name)
-            metrics = evaluate_detector(detector, test, cols, fill_values)
+            fit_seconds = perf_counter() - fit_start
+            score_start = perf_counter()
+            scored = score_detector(detector, test, cols, fill_values)
+            score_seconds = perf_counter() - score_start
+            metrics = summarize_scored_predictions(scored)
             cm = metrics.pop("confusion_matrix")
             metric_rows.append(
                 {
@@ -115,6 +121,9 @@ def run_ablation(
                     "n_test": int(len(test)),
                     "n_test_normals": int((test["label_binary"] == 0).sum()),
                     "n_test_anomalies": n_test_anomalies,
+                    "fit_seconds": fit_seconds,
+                    "score_seconds": score_seconds,
+                    "score_ms_per_beat": 1000.0 * score_seconds / max(len(test), 1),
                     **metrics,
                 }
             )
@@ -129,7 +138,6 @@ def run_ablation(
                     "tp": int(cm[1][1]),
                 }
             )
-            scored = score_detector(detector, test, cols, fill_values)
             scored.insert(0, "detector", detector_name)
             scored.insert(0, "stage_label", stage.label)
             scored.insert(0, "stage", stage.key)

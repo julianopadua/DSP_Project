@@ -33,6 +33,7 @@ def feature_columns(frame: pd.DataFrame) -> list[str]:
         "fs_hz",
         "start_sample",
         "end_sample",
+        "r_index",
     }
     return [
         col
@@ -89,21 +90,13 @@ def score_detector(
     return out
 
 
-def evaluate_detector(
-    detector,
-    test: pd.DataFrame,
-    cols: list[str],
-    fill_values: pd.Series,
-    *,
-    label_col: str = "label_binary",
-) -> dict[str, object]:
-    """Calcula metricas para um detector ja ajustado."""
-    scored = score_detector(detector, test, cols, fill_values, label_col=label_col)
+def summarize_scored_predictions(scored: pd.DataFrame) -> dict[str, object]:
+    """Calcula metricas a partir de scores ja computados."""
     y_true = scored["y_true"].astype(int).to_numpy()
     scores = scored["score_anomaly"].to_numpy()
     y_pred = scored["y_pred"].astype(int).to_numpy()
     cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
-    out: dict[str, object] = {
+    return {
         "pr_auc": float(average_precision_score(y_true, scores)),
         "roc_auc": float(roc_auc_score(y_true, scores)) if len(np.unique(y_true)) == 2 else np.nan,
         "precision": float(precision_score(y_true, y_pred, zero_division=0)),
@@ -115,7 +108,19 @@ def evaluate_detector(
         "fn": int(cm[1, 0]),
         "tp": int(cm[1, 1]),
     }
-    return out
+
+
+def evaluate_detector(
+    detector,
+    test: pd.DataFrame,
+    cols: list[str],
+    fill_values: pd.Series,
+    *,
+    label_col: str = "label_binary",
+) -> dict[str, object]:
+    """Calcula metricas para um detector ja ajustado."""
+    scored = score_detector(detector, test, cols, fill_values, label_col=label_col)
+    return summarize_scored_predictions(scored)
 
 
 def run_detector_benchmark(

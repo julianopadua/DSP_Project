@@ -23,7 +23,7 @@ from src.paper.dataset import (
     selected_records,
     symbol_to_binary_label,
 )
-from src.paper.features import GABOR_BANK_HZ, PHYSIO_WINDOWS_S
+from src.paper.features import GABOR_N_CYCLES, GABOR_WAVE_FREQUENCIES_HZ, PHYSIO_WINDOWS_S
 from src.paper.preprocessing import denoise_fir_chain
 from src.preprocessing.gabor_filters import gabor_energy, gabor_kernel
 
@@ -96,7 +96,7 @@ def figure_ecg_waves_schema(output_dir: Path) -> Path:
     return save_figure(fig, output_dir, "fig_ecg_waves_schema.pdf")
 
 
-def find_example_beat(label_binary: int = 0) -> tuple[str, int, str, np.ndarray, np.ndarray, float]:
+def find_example_beat(label_binary: int = 0) -> tuple[str, int, str, np.ndarray, np.ndarray, float, int]:
     for record_id in selected_records("test"):
         raw, fs, _ = load_record_signal(record_id)
         filtered = denoise_fir_chain(raw, fs)
@@ -110,13 +110,14 @@ def find_example_beat(label_binary: int = 0) -> tuple[str, int, str, np.ndarray,
             if bounds is None:
                 continue
             start, end = bounds
-            return record_id, int(sample), str(symbol), raw[start:end], filtered[start:end], fs
+            r_index = int(sample) - int(start)
+            return record_id, int(sample), str(symbol), raw[start:end], filtered[start:end], fs, r_index
     raise RuntimeError(f"Nenhum batimento com label {label_binary} encontrado.")
 
 
 def figure_raw_vs_filtered(output_dir: Path) -> Path:
-    record_id, sample, symbol, raw, filtered, fs = find_example_beat(label_binary=0)
-    t = (np.arange(len(raw)) - len(raw) // 2) / fs
+    record_id, sample, symbol, raw, filtered, fs, r_index = find_example_beat(label_binary=0)
+    t = (np.arange(len(raw)) - r_index) / fs
     fig, ax = plt.subplots(figsize=(7.2, 2.7))
     ax.plot(t, raw, color=COLORS["raw"], lw=0.9, alpha=0.8, label="bruto")
     ax.plot(t, filtered, color=COLORS["filtered"], lw=1.0, label="filtrado")
@@ -140,15 +141,16 @@ def figure_raw_vs_filtered(output_dir: Path) -> Path:
 def figure_gabor_filter_bank(output_dir: Path, fs: float = 360.0) -> Path:
     fig, ax = plt.subplots(figsize=(7.2, 2.8))
     offset = 0.0
-    for f0 in GABOR_BANK_HZ:
-        t, h_real, _ = gabor_kernel(f0, fs)
-        normalized = h_real / max(np.max(np.abs(h_real)), 1e-12)
-        ax.plot(t * 1000.0, normalized + offset, lw=1.0, label=f"{f0:g} Hz")
-        offset += 1.35
+    for wave_name, frequencies in GABOR_WAVE_FREQUENCIES_HZ.items():
+        for f0 in frequencies:
+            t, h_real, _ = gabor_kernel(f0, fs, n_cycles=GABOR_N_CYCLES)
+            normalized = h_real / max(np.max(np.abs(h_real)), 1e-12)
+            ax.plot(t * 1000.0, normalized + offset, lw=0.9, label=f"{wave_name.upper()} {f0:g} Hz")
+            offset += 1.05
     ax.set_xlabel("Tempo (ms)")
     ax.set_ylabel("Kernel normalizado")
     ax.set_yticks([])
-    ax.legend(ncol=3, frameon=False, loc="upper right")
+    ax.legend(ncol=3, frameon=False, loc="upper right", fontsize=7)
     ax.grid(axis="x", alpha=0.2)
     return save_figure(fig, output_dir, "fig_gabor_filter_bank.pdf")
 
@@ -157,17 +159,26 @@ def figure_gabor_response_examples(output_dir: Path) -> Path:
     normal = find_example_beat(label_binary=0)
     anomaly = find_example_beat(label_binary=1)
     fig, axes = plt.subplots(2, 1, figsize=(7.2, 4.2), sharex=True)
-    for ax, (record_id, sample, symbol, _, filtered, fs), label in (
+    for ax, (record_id, sample, symbol, _, filtered, fs, r_index), label in (
         (axes[0], normal, "normal"),
         (axes[1], anomaly, "anomalo"),
     ):
-        t = (np.arange(len(filtered)) - len(filtered) // 2) / fs
+        t = (np.arange(len(filtered)) - r_index) / fs
         ax.plot(t, filtered, color="#202020", lw=0.9, label="ECG filtrado")
-        for f0, color in ((7.0, "#1f77b4"), (15.0, "#2ca02c"), (30.0, "#d62728")):
-            response = np.sqrt(gabor_energy(filtered, f0, fs))
+        representative_frequencies = {
+            "p": GABOR_WAVE_FREQUENCIES_HZ["p"][1],
+            "qrs": GABOR_WAVE_FREQUENCIES_HZ["qrs"][1],
+            "t": GABOR_WAVE_FREQUENCIES_HZ["t"][1],
+        }
+        for (wave_name, f0), color in zip(
+            representative_frequencies.items(),
+            ("#1f77b4", "#2ca02c", "#d62728"),
+            strict=False,
+        ):
+            response = np.sqrt(gabor_energy(filtered, f0, fs, n_cycles=GABOR_N_CYCLES))
             response = response / max(np.max(response), 1e-12)
             response = response * 0.35 + np.min(filtered)
-            ax.plot(t, response, lw=0.8, color=color, label=f"Gabor {f0:g} Hz")
+            ax.plot(t, response, lw=0.8, color=color, label=f"Gabor {wave_name.upper()} {f0:g} Hz")
         for start, end in PHYSIO_WINDOWS_S.values():
             ax.axvspan(start, end, color="#efefef", alpha=0.55)
         ax.axvline(0, color="#d62728", lw=0.8, ls="--")
@@ -218,16 +229,17 @@ def figure_pr_auc_ablation(metrics: pd.DataFrame, output_dir: Path) -> Path:
     fig, ax = plt.subplots(figsize=(7.2, 3.0))
     stages = [stage.key for stage in ABLATION_STAGES]
     x = np.arange(len(stages))
-    width = 0.24
-    for i, detector in enumerate(DETECTOR_NAMES):
+    markers = {"one_class_svm": "o", "isolation_forest": "s", "lof": "^"}
+    for detector in DETECTOR_NAMES:
         values = []
         for stage in stages:
             row = metrics[(metrics["stage"] == stage) & (metrics["detector"] == detector)]
             values.append(float(row["pr_auc"].iloc[0]) if not row.empty else np.nan)
-        ax.bar(
-            x + (i - 1) * width,
+        ax.plot(
             values,
-            width=width,
+            marker=markers.get(detector, "o"),
+            lw=1.6,
+            ms=5,
             label=detector.replace("_", " "),
             color=COLORS.get(detector),
         )
@@ -242,7 +254,7 @@ def figure_pr_auc_ablation(metrics: pd.DataFrame, output_dir: Path) -> Path:
 
 
 def figure_precision_recall_curves(predictions: pd.DataFrame, output_dir: Path) -> Path:
-    fig, axes = plt.subplots(1, 3, figsize=(7.4, 2.7), sharey=True)
+    fig, axes = plt.subplots(1, 3, figsize=(7.4, 2.9), sharey=True)
     for ax, detector in zip(axes, DETECTOR_NAMES, strict=False):
         subset_detector = predictions[predictions["detector"] == detector]
         for stage in [stage.key for stage in ABLATION_STAGES]:
@@ -258,9 +270,11 @@ def figure_precision_recall_curves(predictions: pd.DataFrame, output_dir: Path) 
         ax.set_xlim(0, 1)
         ax.set_ylim(0, 1.02)
         ax.grid(alpha=0.25)
-        ax.text(0.05, 0.08, detector.replace("_", " "), transform=ax.transAxes, fontsize=8)
+        ax.set_title(detector.replace("_", " "), fontsize=8)
     axes[0].set_ylabel("Precision")
-    axes[-1].legend(frameon=False, fontsize=7, loc="lower left")
+    handles, labels = axes[-1].get_legend_handles_labels()
+    fig.legend(handles, labels, frameon=False, fontsize=7, ncol=4, loc="upper center")
+    fig.subplots_adjust(top=0.78, wspace=0.25)
     return save_figure(fig, output_dir, "fig_precision_recall_curves.pdf")
 
 

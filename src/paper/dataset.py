@@ -192,6 +192,7 @@ def build_stage_feature_frames(
             if bounds is None:
                 continue
             start, end = bounds
+            r_index = int(sample) - int(start)
             rr_prev, rr_next = rr_context(samples, fs, idx)
             beat_id = f"{record_id}:{int(sample)}:{symbol}"
             metadata: dict[str, float | int | str] = {
@@ -206,6 +207,7 @@ def build_stage_feature_frames(
                 "fs_hz": float(fs),
                 "start_sample": int(start),
                 "end_sample": int(end),
+                "r_index": int(r_index),
                 "rr_prev_s": np.nan if rr_prev is None else float(rr_prev),
                 "rr_next_s": np.nan if rr_next is None else float(rr_next),
             }
@@ -219,6 +221,7 @@ def build_stage_feature_frames(
                     stage.feature_groups,
                     rr_prev_s=rr_prev,
                     rr_next_s=rr_next,
+                    r_index=r_index,
                 )
                 stage_rows[stage.key].append(
                     {
