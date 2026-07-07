@@ -14,7 +14,7 @@ from sklearn.metrics import (
 )
 
 from src.paper.constants import DETECTOR_NAMES
-from src.paper.models import anomaly_scores, build_detector
+from src.paper.models import anomaly_scores, binary_predictions, build_detector
 
 
 def feature_columns(frame: pd.DataFrame) -> list[str]:
@@ -54,22 +54,27 @@ def prepare_feature_matrix(
     return x.fillna(fill_values), fill_values
 
 
-def fit_detector_on_normals(
+def fit_detector(
     train: pd.DataFrame,
     detector_name: str,
     *,
     label_col: str = "label_binary",
 ):
-    """Ajusta detector usando apenas linhas normais."""
+    """Ajusta modelo supervisionado ou one-class conforme o protocolo."""
     cols = feature_columns(train)
-    normals, fill_values = prepare_feature_matrix(train.loc[train[label_col] == 0], cols)
+    x_train, fill_values = prepare_feature_matrix(train, cols)
     detector = build_detector(detector_name)
-    detector.fit(normals)
+    if detector_name == "one_class_svm":
+        detector.fit(x_train.loc[train[label_col] == 0])
+    else:
+        y_train = train[label_col].astype(int).to_numpy()
+        detector.fit(x_train, y_train)
     return detector, cols, fill_values
 
 
 def score_detector(
     detector,
+    detector_name: str,
     frame: pd.DataFrame,
     cols: list[str],
     fill_values: pd.Series,
@@ -78,9 +83,8 @@ def score_detector(
 ) -> pd.DataFrame:
     """Retorna scores e predicoes alinhados ao dataframe de entrada."""
     x_eval, _ = prepare_feature_matrix(frame, cols, fill_values)
-    scores = anomaly_scores(detector, x_eval)
-    pred = detector.predict(x_eval)
-    y_pred = np.where(pred == -1, 1, 0)
+    scores = anomaly_scores(detector, x_eval, detector_name)
+    y_pred = binary_predictions(detector, x_eval, detector_name)
     out = frame[
         ["beat_id", "record", "split", "sample", "time_s", "ann_symbol", label_col]
     ].copy()
@@ -112,6 +116,7 @@ def summarize_scored_predictions(scored: pd.DataFrame) -> dict[str, object]:
 
 def evaluate_detector(
     detector,
+    detector_name: str,
     test: pd.DataFrame,
     cols: list[str],
     fill_values: pd.Series,
@@ -119,7 +124,14 @@ def evaluate_detector(
     label_col: str = "label_binary",
 ) -> dict[str, object]:
     """Calcula metricas para um detector ja ajustado."""
-    scored = score_detector(detector, test, cols, fill_values, label_col=label_col)
+    scored = score_detector(
+        detector,
+        detector_name,
+        test,
+        cols,
+        fill_values,
+        label_col=label_col,
+    )
     return summarize_scored_predictions(scored)
 
 
@@ -131,8 +143,8 @@ def run_detector_benchmark(
     """Executa benchmark simples para uma tabela de uma ablação."""
     rows = []
     for name in detector_names:
-        detector, cols, fill_values = fit_detector_on_normals(train, name)
-        metrics = evaluate_detector(detector, test, cols, fill_values)
+        detector, cols, fill_values = fit_detector(train, name)
+        metrics = evaluate_detector(detector, name, test, cols, fill_values)
         metrics.pop("confusion_matrix")
         rows.append({"detector": name, "n_features": len(cols), **metrics})
     return pd.DataFrame(rows)

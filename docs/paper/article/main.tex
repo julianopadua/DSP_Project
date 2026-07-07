@@ -5,18 +5,19 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[brazilian]{babel}
-\usepackage[hidelinks]{hyperref}
+\usepackage[hidelinks,hypertexnames=false]{hyperref}
 \usepackage{url}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{amsmath, amssymb}
 \usepackage{microtype}
 \usepackage{placeins}
+\usepackage{float}
 
 \usepackage{natbib}
 \bibliographystyle{unsrtnat}
 
-\title{Análise Comparativa de Abordagens One-Class para Detecção de Anomalias em Batimentos ECG}
+\title{Comparação entre SVM supervisionada e One-Class SVM para detecção inter-paciente de anomalias em batimentos ECG}
 
 \author{
   Juliano Eleno Silva Pádua\thanks{E-mail \texttt{julianopadua@estudante.ufscar.br}.}\\
@@ -27,7 +28,7 @@
   Grupo 6, Processamento Digital de Sinais\\
   Universidade Federal de São Carlos
   \And
-  Matheo [nome completo a confirmar]\thanks{E-mail \texttt{[email do Matheo]}.}\\
+  Matheo Sebastian Duarte Davalos\thanks{E-mail \texttt{matheo@estudante.ufscar.br}.}\\
   Grupo 6, Processamento Digital de Sinais\\
   Universidade Federal de São Carlos
   \AND
@@ -54,13 +55,13 @@
 \input{data_preprocessing}
 \input{methodology}
 
-\section{Experimentos e resultados preliminares}
+\section{Resultados}
 \input{results}
 
-\section{Discussão preliminar}
+\section{Discussão}
 \input{discussion}
 
-\section{Conclusão parcial e próximos passos}
+\section{Conclusão}
 \input{conclusion}
 
 \section*{Agradecimentos}

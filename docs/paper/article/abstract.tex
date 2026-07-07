@@ -1,21 +1,22 @@
-A comparação entre detectores one-class para batimentos ECG anômalos exige
-avaliar, no mesmo protocolo, como a escolha do algoritmo responde a
-representações progressivamente mais ricas do sinal e a diferentes custos de
-inferência. A análise usa a MIT-BIH Arrhythmia Database em formato WFDB, com
-canal MLII, janelas centradas nas anotações de batimento, separação
-inter-paciente e treinamento restrito a batimentos normais. O protocolo rotula
-batimentos \texttt{N} como normais e demais símbolos válidos não-paced como
-anomalias apenas na etapa de avaliação. Quatro estágios cumulativos organizam a
-engenharia de features, partindo de descritores morfológicos e intervalo RR no
-sinal bruto, seguindo para o sinal filtrado por FIR, depois para descritores
-espectrais e STFT, e por fim para respostas de filtros de Gabor 1D em janelas
-aproximadas P, QRS e T. One-Class SVM, Isolation Forest e Local Outlier Factor
-em modo novelty são comparados com foco em métricas adequadas ao
-desbalanceamento, sobretudo PR-AUC, além de ROC-AUC, precision, recall,
-F1-score, matriz de confusão e tempo de escore por batimento. Os resultados
-preliminares indicam comportamento não monotônico entre algoritmos e estágios
-de representação, com variações de desempenho que dependem da interação entre
-detector e conjunto de features. A comparação fornece uma base reprodutível
-para discutir quais abordagens one-class são mais competitivas nesse cenário e
-qual par representação-detector oferece melhor compromisso entre separação de
-anomalias e custo computacional.
+A detecção inter-paciente de anomalias em ECG depende tanto da representação do
+batimento quanto da informação disponível no treino. A análise usa a MIT-BIH
+Arrhythmia Database em formato WFDB, com preferência pelo canal MLII, janelas
+de 0,25 s antes e 0,45 s depois da anotação, exclusão dos registros
+paced-heavy \texttt{102}, \texttt{104}, \texttt{107} e \texttt{217}, e
+avaliação binária em que \texttt{N} representa normalidade e os demais símbolos
+válidos representam anomalia. O sinal de entrada é sempre o ECG filtrado por
+uma cadeia FIR de fase zero com passa-alta em 0,5 Hz e passa-baixa em 40 Hz.
+A representação final reúne 18 features distribuídas em quatro grupos, sendo
+seis descritores morfológicos, três features rítmicas de intervalo RR, quatro
+descritores espectrais e cinco respostas Gabor extraídas do banco consolidado
+no notebook do grupo, com 8 Hz para P, 15 Hz para QRS e 6 Hz para T. A
+comparação opõe uma SVM supervisionada treinada com normais e anômalos do
+conjunto DS1 e uma One-Class SVM treinada apenas com batimentos normais do
+mesmo conjunto. A PR-AUC ocupa o papel principal, acompanhada de ROC-AUC,
+precision, recall, F1 e matriz de confusão. No teste DS2, a SVM supervisionada
+atingiu PR-AUC de 0,528, ROC-AUC de 0,748 e F1 de 0,412, enquanto a One-Class
+SVM atingiu PR-AUC de 0,448, ROC-AUC de 0,537 e F1 de 0,370. A formulação
+one-class recuperou ligeiramente mais anomalias no limiar adotado, mas ao custo
+de um volume muito maior de falsos positivos. A comparação mostra que a
+representação filtrada final é informativa, porém o acesso a exemplos anômalos
+no treino continua decisivo para estabilizar a fronteira inter-paciente.

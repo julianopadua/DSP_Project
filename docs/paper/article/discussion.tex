@@ -1,49 +1,38 @@
-A comparação entre A0 e A1 mostra ganho de PR-AUC após a filtragem FIR nos três
-detectores. Esse resultado apoia a hipótese de que a remoção de deriva lenta e
-ruído fora da banda principal pode tornar a morfologia de batimentos mais útil
-para o protocolo one-class. Ainda assim, a filtragem não deve ser lida como
-garantia geral de melhora, pois a qualidade visual do sinal e a separabilidade
-para um detector dependem da representação extraída e do limiar operacional.
+A superioridade da SVM supervisionada era esperada em termos de informação
+disponível no treino, mas a magnitude dessa diferença ajuda a qualificar o
+papel da representação final filtrada. O vetor de 18 features já é compacto e
+interpretável, porém a fronteira supervisionada ainda se beneficia de observar
+exemplos anômalos reais de DS1 para ajustar a separação entre normalidade e
+anomalia. A vantagem em PR-AUC, ROC-AUC e F1 sugere que a informação adicional
+de classe não está sendo desperdiçada pelo conjunto de descritores escolhido.
 
-A entrada de descritores espectrais em A2 favoreceu principalmente Isolation
-Forest e também produziu o melhor PR-AUC do One-Class SVM. Uma interpretação
-plausível é que energia por bandas, frequência dominante e estatísticas de STFT
-criam informação global útil para fronteiras e partições, sobretudo quando
-anomalias se afastam por concentração de energia em faixas específicas. O mesmo
-acréscimo reduziu o PR-AUC do LOF em relação a A1, o que sugere perda de
-estrutura local útil ou aumento de dispersão em dimensões que não contribuem
-igualmente para a vizinhança.
+A One-Class SVM expõe uma dificuldade mais estrutural do problema. A classe
+normal inter-paciente não forma uma nuvem homogênea. Diferenças de morfologia,
+ritmo basal, amplitude e ruído residual entre pacientes tornam a região de
+normalidade mais espalhada do que a formulação one-class idealizada costuma
+assumir. Quando a fronteira se abre para acomodar essa variabilidade, parte dos
+batimentos anômalos é recuperada. Ao mesmo tempo, o número de falsos positivos
+cresce rapidamente. O resultado operacional foi claro. Para recuperar
+400 anomalias adicionais, a One-Class SVM acrescentou 4379 alarmes extras no
+teste.
 
-As respostas Gabor em A3 devem ser interpretadas como uma hipótese de
-representação local, não como garantia de separabilidade maior. A versão final
-do protocolo usa um banco enxuto por região P, QRS e T para reduzir
-redundância e evitar que a etapa tempo-frequência seja dominada por uma busca
-implícita de parâmetros. Caso A3 melhore apenas parte dos detectores, a leitura
-mais apropriada será de interação entre representação e modelo, e não de
-superioridade geral de Gabor.
+A representação adotada continua metodologicamente interessante porque combina
+quatro famílias de informação sem recorrer a sinal bruto ou a embeddings pouco
+transparentes. As features morfológicas e rítmicas mantêm leitura direta do
+traçado e do contexto RR. Os descritores espectrais resumem a distribuição de
+energia do batimento filtrado. As respostas Gabor preservam uma leitura local
+em janelas fisiológicas aproximadas de P, QRS e T, com banco compacto
+reaproveitado do notebook final do grupo. Essa composição favorece explicação e
+reprodutibilidade, mesmo quando o ganho estatístico depende fortemente do
+regime de treino.
 
-A distância entre PR-AUC e métricas em limiar fixo também merece cautela. LOF
-atingiu recalls altos com baixa precision, sinalizando grande número de falsos
-positivos sob o limiar definido por contaminação. A análise por curva
-precision-recall oferece uma leitura mais estável do ranqueamento de anomalias,
-enquanto a matriz de confusão depende diretamente de uma escolha operacional de
-limiar.
-
-O custo computacional torna essa leitura menos unidimensional. A3 contém a
-representação mais completa e aumenta a dimensionalidade em relação a A2. Um
-ganho pequeno de PR-AUC pode não justificar esse aumento se o tempo por
-batimento crescer de forma relevante. Por outro lado, um detector mais
-conservador pode ser útil em cenários de triagem se combinar baixa latência com
-precisão aceitável. A escolha final deve considerar o par representação-detector,
-não apenas o algoritmo isolado.
-
-A rotulagem binária normal versus anomalia simplifica classes clínicas com
-origens distintas, e as janelas P, QRS e T usadas no protocolo são regiões
-aproximadas em torno do R-peak, não delineações clínicas. A filtragem de 0,5 a
-40 Hz também deve ser lida como escolha compatível com monitoramento e
-representação de batimentos, não como configuração diagnóstica universal. Uma
-ablação interna de frequências, larguras de envelope e fase dos filtros Gabor
-poderia refinar A3, mas esse refinamento ampliaria o escopo do estudo. Ainda
-assim, a separação inter-paciente, a exclusão de paced no v1 e o treino
-restrito a batimentos normais tornam a primeira execução adequada para uma
-pergunta de DSP experimental.
+Algumas limitações precisam permanecer explícitas. O benchmark reduz a tarefa a
+normal versus anomalia, embora os símbolos anômalos agreguem morfologias e
+origens distintas. As janelas P, QRS e T são aproximações temporais ancoradas
+na anotação do R-peak, não delineações clínicas precisas. Os hiperparâmetros da
+SVM supervisionada e da One-Class SVM também não passaram por busca nested
+dentro de DS1. Além disso, uma única fronteira one-class pode ser insuficiente
+para representar a multimodalidade da normalidade inter-paciente. Mesmo com
+essas restrições, a comparação já delimita com clareza o desempenho de uma
+representação DSP interpretável sob dois regimes de treinamento bastante
+diferentes.

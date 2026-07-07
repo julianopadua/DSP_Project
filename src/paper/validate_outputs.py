@@ -30,8 +30,9 @@ def validate_stage_alignment() -> None:
 
 
 def validate_split_and_results() -> None:
+    first_stage = ABLATION_STAGES[0]
     frame = pd.read_csv(
-        PAPER_PROCESSED_DIR / stage_filename("A0", "raw"),
+        PAPER_PROCESSED_DIR / stage_filename(first_stage.key, first_stage.label),
         usecols=["record", "split", "label_binary"],
     )
     train_records = set(frame.loc[frame["split"] == "train", "record"].astype(str))

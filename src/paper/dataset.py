@@ -165,7 +165,7 @@ def build_stage_feature_frames(
     post_s: float = 0.45,
     max_beats_per_record: int | None = None,
 ) -> dict[str, pd.DataFrame]:
-    """Monta dataframes de features A0-A3 preservando as mesmas chaves de batimento."""
+    """Monta dataframes de features A1-A3 preservando as mesmas chaves de batimento."""
     base = base_dir or mitdb_record_dir()
     groups = interpatient_record_split()
     split_lookup = split_name_by_record or {
@@ -183,17 +183,18 @@ def build_stage_feature_frames(
         ann = load_record_annotations(record_id, base)
         samples = np.asarray(ann.sample, dtype=int)
         symbols = np.asarray(ann.symbol, dtype=str)
+        valid_mask = np.array([is_valid_beat_symbol(str(symbol)) for symbol in symbols], dtype=bool)
+        valid_samples = samples[valid_mask]
+        valid_symbols = symbols[valid_mask]
 
         kept = 0
-        for idx, (sample, symbol) in enumerate(zip(samples, symbols, strict=False)):
-            if not is_valid_beat_symbol(str(symbol)):
-                continue
+        for idx, (sample, symbol) in enumerate(zip(valid_samples, valid_symbols, strict=False)):
             bounds = full_beat_bounds(int(sample), fs, len(raw), pre_s=pre_s, post_s=post_s)
             if bounds is None:
                 continue
             start, end = bounds
             r_index = int(sample) - int(start)
-            rr_prev, rr_next = rr_context(samples, fs, idx)
+            rr_prev, rr_next = rr_context(valid_samples, fs, idx)
             beat_id = f"{record_id}:{int(sample)}:{symbol}"
             metadata: dict[str, float | int | str] = {
                 "beat_id": beat_id,

@@ -35,7 +35,8 @@ TRACKED_ARTICLE_SAMPLES = (
     "docs/paper/article/main.tex",
     "docs/paper/article/ref.bib",
     "docs/paper/article/arxiv.sty",
-    "docs/paper/article/figures/fig_pr_auc_ablation.pdf",
+    "docs/paper/article/figures/fig_model_precision_recall.pdf",
+    "docs/paper/article/figures/fig_confusion_matrices.pdf",
 )
 
 IGNORED_SAMPLES = (
@@ -149,27 +150,33 @@ def audit_results_table() -> list[str]:
     metrics = pd.read_csv(metrics_path)
     confusion_path = PAPER_PROCESSED_DIR / "confusion_matrices.csv"
     confusion = pd.read_csv(confusion_path) if confusion_path.is_file() else None
-    table_text = results_path.read_text(encoding="utf-8")
+    table_text = re.sub(r"\s+", " ", results_path.read_text(encoding="utf-8"))
     detector_labels = {
+        "svm_supervised": "SVM supervisionada",
         "one_class_svm": "One-Class SVM",
-        "isolation_forest": "Isolation Forest",
-        "lof": "LOF",
+    }
+    training_labels = {
+        "svm_supervised": "normais + anômalos de DS1",
+        "one_class_svm": "apenas normais de DS1",
     }
     issues: list[str] = []
-    for row in metrics.itertuples(index=False):
+    final_metrics = metrics[metrics["stage"] == "A3"]
+    for row in final_metrics.itertuples(index=False):
         detector = detector_labels.get(str(row.detector), str(row.detector))
+        training = training_labels.get(str(row.detector), "")
         expected = (
-            f"{row.stage} & {detector} & {int(row.n_features)} & "
+            f"{detector} & {training} & {int(row.n_features)} & "
             f"{row.pr_auc:.3f} & {row.roc_auc:.3f} & "
             f"{row.precision:.3f} & {row.recall:.3f} & {row.f1:.3f}"
         )
         if expected not in table_text:
             issues.append(f"linha de resultados ausente ou desatualizada: {expected}")
     if confusion is not None:
-        for row in confusion.itertuples(index=False):
+        final_confusion = confusion[confusion["stage"] == "A3"]
+        for row in final_confusion.itertuples(index=False):
             detector = detector_labels.get(str(row.detector), str(row.detector))
             expected = (
-                f"{row.stage} & {detector} & {int(row.tn)} & {int(row.fp)} & "
+                f"{detector} & {int(row.tn)} & {int(row.fp)} & "
                 f"{int(row.fn)} & {int(row.tp)}"
             )
             if expected not in table_text:

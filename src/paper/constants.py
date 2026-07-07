@@ -38,21 +38,20 @@ class AblationStage:
 
 
 ABLATION_STAGES = (
-    AblationStage("A0", "raw", "raw", ("morphology", "rr")),
     AblationStage("A1", "filtered", "filtered", ("morphology", "rr")),
     AblationStage("A2", "spectral", "filtered", ("morphology", "rr", "spectral")),
     AblationStage("A3", "gabor", "filtered", ("morphology", "rr", "spectral", "gabor")),
 )
 
 DETECTOR_CONFIGS = {
-    "one_class_svm": {"nu": 0.05, "kernel": "rbf", "gamma": "scale"},
-    "isolation_forest": {
-        "n_estimators": 300,
-        "contamination": 0.05,
+    "svm_supervised": {
+        "kernel": "rbf",
+        "gamma": "scale",
+        "class_weight": "balanced",
+        "probability": True,
         "random_state": 42,
-        "n_jobs": -1,
     },
-    "lof": {"novelty": True, "n_neighbors": 35, "contamination": 0.05, "n_jobs": -1},
+    "one_class_svm": {"nu": 0.05, "kernel": "rbf", "gamma": "scale"},
 }
 
 STAGE_KEYS = tuple(stage.key for stage in ABLATION_STAGES)

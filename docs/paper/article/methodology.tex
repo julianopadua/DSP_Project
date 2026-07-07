@@ -1,82 +1,82 @@
-\subsection{Estágios de ablação}
+\subsection{Representação final do batimento}
 
-O protocolo mantém a mesma população de batimentos em todos os estágios e altera
-apenas a representação das features. Com a população fixa, diferenças de métrica
-podem ser atribuídas à representação do sinal, não a mudanças na composição do
-teste. A ablação é lida como medida de contribuição incremental, enquanto a
-comparação entre detectores considera cada estágio como um par
-representação-detector.
+O vetor final reúne 18 features e altera apenas a forma de resumir o batimento
+filtrado e o seu contexto rítmico local. Não há descritores do sinal bruto nem
+expansão massiva de dimensionalidade. A intenção é manter um conjunto compacto,
+interpretável e coerente com a segmentação ancorada no R-peak.
 
-\begin{table}[!htbp]
+\begin{table*}[!htbp]
   \centering
-  \caption{Estágios de ablação implementados.}
-  \label{tab-ablation-stages}
-  \begin{tabular}{lll}
+  \caption{Grupos de features da representação final.}
+  \label{tab-feature-groups}
+  \scriptsize
+  \renewcommand{\arraystretch}{1.08}
+  \begin{tabular}{lp{8.6cm}r}
     \toprule
-    Estágio & Entrada & Features \\
+    Grupo & Variáveis & Quantidade \\
     \midrule
-    A0 raw & ECG bruto & morfologia, janelas P/QRS/T e RR \\
-    A1 filtered & ECG filtrado & mesmas features de A0 \\
-    A2 spectral & ECG filtrado & A1 + bandas, entropia, centroide e STFT \\
-    A3 gabor & ECG filtrado & A2 + respostas Gabor em P/QRS/T \\
+    Morfologia filtrada & amplitude em R, pico-a-pico, energia, área absoluta, inclinação máxima absoluta e desvio-padrão & 6 \\
+    Ritmo & RR anterior, RR posterior e razão RR & 3 \\
+    Espectrais & centroide espectral, largura de banda, potência em 8 a 20 Hz e potência em 20 a 40 Hz & 4 \\
+    Gabor & energia em P, energia em QRS, máximo em QRS, deslocamento do pico em QRS e energia em T & 5 \\
     \bottomrule
   \end{tabular}
-\end{table}
+  \renewcommand{\arraystretch}{1.0}
+\end{table*}
 
-As features morfológicas incluem máximo, mínimo, pico-a-pico, energia, área
-absoluta, estatísticas por janelas fisiológicas aproximadas e inclinação. As
-features rítmicas incluem RR anterior, RR posterior e a razão entre esses
-intervalos. As features espectrais incluem energia por bandas, energia relativa,
-frequência dominante, entropia espectral, centroide, largura espectral e
-estatísticas de magnitude da STFT. Todas as features locais são ancoradas no
-índice real da anotação R dentro da janela segmentada. O banco Gabor usa uma
-configuração por região aproximada, com 7 Hz para P, 15 Hz para QRS e 5 Hz para
-T. De cada resposta são extraídos energia, máximo, média, desvio padrão e
-deslocamento temporal do pico dentro da janela correspondente, além de razões
-de energia entre P, T e QRS.
+As features morfológicas resumem amplitude, energia, área absoluta,
+variabilidade e inclinação máxima do batimento filtrado. As features rítmicas
+capturam o contexto local do intervalo RR antes e depois da batida. Os
+descritores espectrais medem quão concentrada ou espalhada está a energia da
+janela, com ênfase nas bandas de 8 a 20 Hz e 20 a 40 Hz, associadas a
+componentes mais rápidas do QRS. Esse desenho mantém a comparação no domínio do
+sinal tratado por DSP e explicita que o vetor final usa morfologia, ritmo,
+espectro e respostas locais, não amostras cruas da janela.
+
+\subsection{Banco Gabor do notebook}
+
+A representação final usa exatamente o banco consolidado no notebook do grupo.
+A região P recebe um filtro par em 8 Hz com janela de -0,28 s a -0,07 s. A
+região QRS recebe um filtro em magnitude em 15 Hz com janela de -0,07 s a
+0,07 s. A região T recebe um filtro par em 6 Hz com janela de 0,18 s a 0,45 s.
+A Figura~\ref{fig-gabor-bank} mostra os três kernels normalizados, e a
+Figura~\ref{fig-gabor-response} ilustra as respostas alinhadas em um batimento
+normal e em um batimento anômalo.
 
 \begin{figure}[!htbp]
   \centering
   \includegraphics[width=0.95\linewidth]{figures/fig_gabor_filter_bank.pdf}
-  \caption{Banco de filtros Gabor 1D usado para extrair respostas locais em
-  diferentes frequências centrais.}
+  \caption{Banco compacto de filtros Gabor 1D usado na representação final.}
   \label{fig-gabor-bank}
 \end{figure}
 
 \begin{figure}[!htbp]
   \centering
   \includegraphics[width=0.95\linewidth]{figures/fig_gabor_response_examples.pdf}
-  \caption{Respostas Gabor em um batimento normal e em um batimento anômalo,
-  com regiões P, QRS e T destacadas.}
+  \caption{Respostas Gabor em um batimento normal e em um batimento anômalo, com janelas aproximadas de P, QRS e T destacadas.}
   \label{fig-gabor-response}
 \end{figure}
 
-\subsection{Detectores e métricas}
+\subsection{Modelos e métricas}
 
-Os modelos são treinados apenas com batimentos normais do DS1. One-Class SVM usa
-kernel RBF, \texttt{nu=0.05}, \texttt{gamma=scale} e padronização das features.
-Isolation Forest usa 300 árvores, contaminação 0,05 e semente fixa. LOF usa
-\texttt{novelty=True}, 35 vizinhos e contaminação 0,05. Os escores são
-orientados para que valores maiores indiquem maior anomalia.
+Dois modelos compartilham a mesma padronização das 18 features, mas usam
+regimes de treinamento diferentes. A SVM supervisionada usa kernel RBF,
+\texttt{class\_weight=balanced}, \texttt{gamma=scale} e probabilidades
+habilitadas. Esse modelo é ajustado com todos os 51.002 batimentos do treino
+DS1. A One-Class SVM usa kernel RBF, \texttt{nu=0.05} e
+\texttt{gamma=scale}, sendo ajustada apenas com os 38.088 batimentos normais de
+DS1.
 
 PR-AUC é a métrica principal. ROC-AUC, precision, recall, F1 e matriz de
-confusão complementam a análise. As predições binárias usam o limiar interno de
-cada detector, controlado por \texttt{nu} ou \texttt{contamination}.
+confusão complementam a análise. A SVM supervisionada é avaliada pelo escore de
+probabilidade da classe anômala, enquanto a One-Class SVM usa o valor negativo
+da \texttt{decision\_function}, orientado para que escores maiores representem
+maior anomalia.
 
-\subsection{Custo computacional}
-
-O protocolo registra tempo de ajuste, tempo total de escore no conjunto de teste
-e tempo médio de escore por batimento para cada par estágio-detector. Essas
-medidas não substituem PR-AUC, mas permitem discutir se um ganho de
-representação justifica maior custo de inferência. A interpretação permanece
-local ao ambiente de execução do experimento, sem equivaler a latência real em
-hardware embarcado.
-
-\begin{figure}[!htbp]
+\begin{figure}[H]
   \centering
-  \includegraphics[width=0.95\linewidth]{figures/fig_pipeline_ablation.pdf}
-  \caption{Pipeline experimental com leitura WFDB, segmentação, split
-  inter-paciente, ablações, detectores one-class e avaliação.}
+  \includegraphics[width=1.0\linewidth]{figures/fig_pipeline_ablation.pdf}
+  \caption{Pipeline experimental resumido.}
   \label{fig-pipeline}
 \end{figure}
 \FloatBarrier

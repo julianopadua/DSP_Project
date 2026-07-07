@@ -1,4 +1,4 @@
-"""Entry point para construir features A0-A3 do paper."""
+"""Entry point para construir features A1-A3 do paper."""
 
 from __future__ import annotations
 
@@ -53,11 +53,13 @@ def write_outputs(stage_frames, output_dir: Path) -> None:
         "rr_prev_s",
         "rr_next_s",
     ]
-    stage_frames["A0"][manifest_cols].to_csv(output_dir / "beat_manifest.csv", index=False)
+    first_stage = ABLATION_STAGES[0].key
+    stage_frames[first_stage][manifest_cols].to_csv(output_dir / "beat_manifest.csv", index=False)
 
 
 def write_protocol_summary(stage_frames, output_dir: Path, records: tuple[str, ...]) -> None:
     groups = interpatient_record_split()
+    first_stage = ABLATION_STAGES[0].key
     summary = {
         "records": list(records),
         "train_records": list(groups["train"]),
@@ -67,11 +69,11 @@ def write_protocol_summary(stage_frames, output_dir: Path, records: tuple[str, .
         "stage_rows": {stage: int(len(frame)) for stage, frame in stage_frames.items()},
         "label_counts": {
             str(k): int(v)
-            for k, v in stage_frames["A0"]["label_binary"].value_counts().sort_index().items()
+            for k, v in stage_frames[first_stage]["label_binary"].value_counts().sort_index().items()
         },
         "symbol_counts": {
             str(k): int(v)
-            for k, v in stage_frames["A0"]["ann_symbol"].value_counts().sort_index().items()
+            for k, v in stage_frames[first_stage]["ann_symbol"].value_counts().sort_index().items()
         },
     }
     (output_dir / "protocol_summary.json").write_text(
@@ -82,7 +84,7 @@ def write_protocol_summary(stage_frames, output_dir: Path, records: tuple[str, .
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Constroi features por batimento para as ablacoes A0-A3 do paper.",
+        description="Constroi features por batimento para as ablacoes A1-A3 do paper.",
     )
     parser.add_argument("--split", choices=("all", "train", "test"), default="all")
     parser.add_argument(

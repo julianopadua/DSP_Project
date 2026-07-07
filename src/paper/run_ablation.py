@@ -1,4 +1,4 @@
-"""Entry point para treinar e avaliar detectores one-class nas ablacoes."""
+"""Entry point para treinar e avaliar os modelos do paper nas ablacoes filtradas."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from src.config import PAPER_PROCESSED_DIR, ensure_data_dirs
 from src.paper.build_dataset import stage_filename
 from src.paper.constants import ABLATION_STAGES, DETECTOR_NAMES
 from src.paper.experiments import (
-    fit_detector_on_normals,
+    fit_detector,
     score_detector,
     summarize_scored_predictions,
 )
@@ -54,7 +54,7 @@ def assert_protocol_integrity(stage_frames: dict[str, pd.DataFrame]) -> None:
         raise AssertionError("Ha registros compartilhados entre treino e teste.")
 
 
-def maybe_subsample_normals(
+def maybe_subsample_train(
     train: pd.DataFrame,
     max_train_normals: int | None,
     random_state: int,
@@ -62,10 +62,12 @@ def maybe_subsample_normals(
     if max_train_normals is None:
         return train
     normals = train[train["label_binary"] == 0]
+    anomalies = train[train["label_binary"] == 1]
     if len(normals) <= max_train_normals:
         return train
     sampled = normals.sample(n=max_train_normals, random_state=random_state)
-    return sampled.sort_values(["record", "sample"]).reset_index(drop=True)
+    combined = pd.concat([sampled, anomalies], ignore_index=True)
+    return combined.sort_values(["record", "sample"]).reset_index(drop=True)
 
 
 def run_ablation(
@@ -90,23 +92,25 @@ def run_ablation(
         if n_test_anomalies == 0:
             raise ValueError(f"Sem anomalias de teste em {stage.key}.")
 
-        train_for_fit = maybe_subsample_normals(train, max_train_normals, random_state)
+        train_for_fit = maybe_subsample_train(train, max_train_normals, random_state)
         n_train_normals_used = int((train_for_fit["label_binary"] == 0).sum())
+        n_train_anomalies_used = int((train_for_fit["label_binary"] == 1).sum())
         logger.info(
-            "%s: treino normal usado %d/%d, teste %d linhas",
+            "%s: treino normal usado %d/%d, anomalias de treino %d, teste %d linhas",
             stage.key,
             n_train_normals_used,
             n_train_normals_available,
+            n_train_anomalies_used,
             len(test),
         )
 
         for detector_name in detector_names:
             logger.info("Treinando %s em %s", detector_name, stage.key)
             fit_start = perf_counter()
-            detector, cols, fill_values = fit_detector_on_normals(train_for_fit, detector_name)
+            detector, cols, fill_values = fit_detector(train_for_fit, detector_name)
             fit_seconds = perf_counter() - fit_start
             score_start = perf_counter()
-            scored = score_detector(detector, test, cols, fill_values)
+            scored = score_detector(detector, detector_name, test, cols, fill_values)
             score_seconds = perf_counter() - score_start
             metrics = summarize_scored_predictions(scored)
             cm = metrics.pop("confusion_matrix")
@@ -118,6 +122,7 @@ def run_ablation(
                     "n_features": len(cols),
                     "n_train_normals_available": n_train_normals_available,
                     "n_train_normals_used": n_train_normals_used,
+                    "n_train_anomalies_used": n_train_anomalies_used,
                     "n_test": int(len(test)),
                     "n_test_normals": int((test["label_binary"] == 0).sum()),
                     "n_test_anomalies": n_test_anomalies,
@@ -152,14 +157,14 @@ def run_ablation(
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Executa benchmark one-class para as features A0-A3 do paper.",
+        description="Executa o benchmark SVM supervisionada vs One-Class SVM para A1-A3.",
     )
     parser.add_argument("--input-dir", type=Path, default=PAPER_PROCESSED_DIR)
     parser.add_argument("--output-dir", type=Path, default=PAPER_PROCESSED_DIR)
     parser.add_argument(
         "--detectors",
         default=",".join(DETECTOR_NAMES),
-        help="Detectores separados por virgula.",
+        help="Modelos separados por virgula.",
     )
     parser.add_argument("--max-train-normals", type=int, default=None)
     parser.add_argument("--random-state", type=int, default=42)

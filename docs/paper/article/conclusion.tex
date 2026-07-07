@@ -1,19 +1,18 @@
-O pipeline experimental permitiu avaliar filtragem FIR, descritores espectrais
-e respostas Gabor sob a restrição de treino apenas com batimentos normais. A
-execução inter-paciente na MIT-BIH mostrou que o acréscimo de processamento e
-features não produz ganho monotônico. One-Class SVM favoreceu a representação
-bruta, Isolation Forest respondeu melhor aos descritores espectrais, e LOF teve
-seu melhor resultado com features Gabor.
+A comparação inter-paciente mostrou que a representação final filtrada de
+18 features sustenta desempenho útil tanto para SVM supervisionada quanto para
+One-Class SVM, mas o regime supervisionado permaneceu mais estável no conjunto
+de teste. A SVM supervisionada atingiu PR-AUC de 0,528, ROC-AUC de 0,748 e
+F1 de 0,412. A One-Class SVM atingiu PR-AUC de 0,448, ROC-AUC de 0,537 e
+F1 de 0,370.
 
-Esses resultados preservam a hipótese como questão experimental, não como
-conclusão fechada. A próxima etapa deve acrescentar a leitura de custo
-computacional já registrada pelo pipeline, com tempo de ajuste, tempo de escore
-e tempo médio por batimento. Essa análise permite comparar não apenas o melhor
-PR-AUC, mas o melhor compromisso entre detecção e custo de inferência,
-especialmente no estágio A3, onde a representação é mais completa.
+O contraste entre as matrizes de confusão ajuda a interpretar esses números. A
+One-Class SVM recuperou um pouco mais anomalias no limiar adotado, mas fez isso
+com forte aumento de falsos positivos. A SVM supervisionada, em contrapartida,
+ofereceu melhor equilíbrio entre triagem e carga de revisão manual.
 
-A continuidade também deve concentrar-se em análise de limiar por FPR alvo,
-seleção ou compressão de features Gabor, comparação com baselines supervisionados
-apenas como referência externa, e inspeção de exemplos de erro. O enquadramento
-deve permanecer como benchmark de DSP e detecção one-class, sem promessa de
-diagnóstico clínico ou implantação embarcada sem validação específica.
+O protocolo deixa uma referência reprodutível para extensões futuras com busca
+de hiperparâmetros, calibração de limiar, seleção de features e modelagens de
+normalidade menos rígidas que uma única fronteira global. Mesmo sem avançar
+para diagnóstico clínico, a comparação já mostra que uma cadeia DSP filtrada e
+interpretável se beneficia de forma decisiva do acesso a exemplos anômalos no
+treino.

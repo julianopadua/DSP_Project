@@ -2,7 +2,7 @@
 
 ## Visão Geral
 
-Cada linha do arquivo `data/processed/mitdb_beat_features.csv` representa um batimento segmentado da base MIT-BIH Arrhythmia Database. A janela é centrada na anotação do batimento e cobre aproximadamente `0.25 s` antes da anotação e `0.45 s` depois dela. Essa escolha mantém a região do complexo QRS no centro e ainda preserva trechos nos quais ondas P e T podem aparecer.
+Cada linha do arquivo `data/processed/mitdb_beat_features.csv` representa um batimento segmentado da base MIT-BIH Arrhythmia Database. A janela é ancorada na anotação do batimento e cobre aproximadamente `0.25 s` antes da anotação e `0.45 s` depois dela. Essa escolha preserva a região do complexo QRS como referência temporal e ainda mantém trechos nos quais ondas P e T podem aparecer.
 
 O objetivo do dataset é diferenciar batimentos normais e anômalos em uma tarefa binária simples. O conjunto de atributos foi mantido pequeno para facilitar a explicação do método na apresentação.
 
